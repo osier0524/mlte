@@ -780,49 +780,54 @@
       </div>
     </div>
 
+  <br/>
     <h2 class="section-header">System Requirements</h2>
-    
-          <!-- Priority Legend  -->
-          <br/>
-
-      <div class="horizontal-legend">
+      <!-- Priority Legend  -->
+    <br/>
+    <div class="horizontal-legend">
       <div class="legend-item">
         <span class="circle top-priority"></span>
         <p>Top Priority</p>
-      </div>
+    </div>
     
-      <div class="legend-item">
+    <div class="legend-item">
         <span class="circle mild-priority"></span>
         <p>Mild Priority</p>
-      </div>
+    </div>
+
     <div class="legend-item">
       <span class="circle low-priority"></span>
       <p>Low Priority</p>
     </div>
-      </div>
-      <br/>
-
-    <div>
-      <Chatgpt></Chatgpt>
     </div>
 
+    <!-- End Priority Legend  -->
+
+    <br/>
+
     <div class="input-group">
-      
+    <!-- List of requirements -->
+    <br/>
     <Accordion title="Inference Latency">
       <template #content>
-          <Latency MLTask="Classification" usageContext="Real-time Application" />
-        </template>
+        <!-- TODO: pull data from these fields if it is modified while filling out the form-->
+         <!-- TODO: Make those fields mandatory in the form -->
+        <InferenceLat MLTask={{ form.system.task }} :usageContext="form.system.usage_context" />
+      </template>
     </Accordion>
 
-    <Accordion title="Training Latency">
+ 
+
+    <Accordion title="Explainability">
       <template #content>
-          <Training>MLTask="Classification" usageContext="Real-time Application" </Training> 
-        </template>
+        <Explainability></Explainability>
+      </template>
     </Accordion>
 
     </div>
     <br/>
 
+    <!--TODO: Delete Prior Version -->
     <div class="input-group">
       <SubHeader :render-info="false">
         Requirements
