@@ -13,14 +13,26 @@
     <!-- <p> <b>What does that mean for your project?</b></p> -->
     <p><b>Create a Quality Scenario</b></p>
     <br/>
-
-     
 <div>
+
+ <!-- Deployment Option- alternative 
+  <select v-model="selectedOption" @change="toggleOtherOption">
+    <option value="option1">Batch Inference (the model makes predictions on a bunch of common unlabeled examples and then caches those prediction)</option>
+    <option value="option2">Streaming Inference (model only makes predictions on demand)</option>
+    <option value="option3"> To Be Defined </option>
+    <option value="other">Other</option>
+  </select>
+
+  <div v-if="showOtherOption">
+    <label for="otherOption">Other:</label>
+    <UInput v-model="value" />
+  </div> -->
+
     <!-- Deployment Option -->
-    <label><b>Inference Option</b></label>
+    <!-- <label><b>Inference Option</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">edit this...</div>
+      <div class="tooltip">API call for project-specific definition</div>
     </div>
     <USelect
       placeholder="Select an option..."
@@ -29,58 +41,108 @@
       v-model="deploymentInfrastructure"
       style="width: 300px;" 
     />
-    <br />
+    <br /> -->
 
+    
+  <!-- 1 Inference Option -->
+  <label><b>Inference Option</b></label>
+  <div class="info-container">
+    <span class="info-icon">i</span>
+    <div class="tooltip">API call for project-specific definition</div>
+  </div>
+
+  <!-- USelect Component -->
+  <USelect
+    placeholder="Select an option..."
+    :options="options"
+    icon="i-heroicons-magnifying-glass-20-solid"
+    v-model="deploymentInfrastructure"
+    @change="handleSelection"
+    style="width: 300px;"
+  />
+
+  <!-- Conditionally show input field for 'Other' -->
+  <br />
+  <div v-if="showOtherInput">
+    <label for="otherInput"><b>*Specify Your Choice</b> </label>
+    <UInput v-model="OtherInferenceOption" placeholder="Specify your inference option" style="width: 300px;" />
+  </div>
+
+  <br/>
+
+  <div>
     <!-- Deployment Infrastructure -->
     <label><b>Deployment Infrastructure</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">Select where your model will be deployed</div>
+      <div class="tooltip">API call for project-specific definition</div>
     </div>
+
+    <!-- Deployment Infrastructure Selection -->
     <USelect
       placeholder="Select an option..."
-      :options="['Cloud (enables scalable, remote access to computational resources and storage for inference)', 'On-premise (model runs on local, in-house servers, offering full control over the environment but requiring in-house maintenance)', 'Edge (allow real-time predictions and low-latency while minimizing the need for data transmission to centralized servers)', 'To Be Defined', 'Other']"
+      :options="secondoptions"
       icon="i-heroicons-magnifying-glass-20-solid"
       v-model="infrastructureDetails"
+      @change="handleSelectionDeployment"
       style="width: 300px;" 
     />
     <br /> 
+
+    <!-- Conditionally show input field for Other -->
+    <div v-if="showOtherInputDeployment">
+      <label for="otherInput"><b>*Specify Other Deployment Infrastructure</b></label>
+      <UInput v-model="OtherDeploymentOption" placeholder="Specify your deployment infrastructure" style="width: 300px;" />
+    </div>
+  </div>
+
+  <br/>
 
     <!-- Inference Latency Metrics -->
     <label><b>Average Expected Latency in Seconds</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">Enter the average time (in seconds) that you expect for inference to complete under normal conditions.</div>
+      <div class="tooltip">API call for project-specific definition</div>
     </div>
+    <div style="display: flex; align-items: center;"> 
     <UInput 
     v-model="averageLatency" 
-    placeholder="X seconds" 
-    style="width: 300px;" 
+    style="width: 50px;" 
      />
+     <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+     </div>
     <br />
 
+
+    
     <label><b>Percentage of Requests to Meet Target</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">Specify the latency (in seconds) that 90% of your requests should meet.</div>
+      <div class="tooltip">API call for project-specific definition</div>
     </div>
-    <UInput v-model="mostLatency" placeholder="90%" style="width: 300px;"  />
+    <div style="display: flex; align-items: center;"> 
+    <UInput v-model="PercentageLatency" style="width: 50px;"  />
+    <p style="margin-left:8px; margin-bottom:0;">%</p>
+    </div>
     <br />
 
     <label><b>Latency in Seconds</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">Maximum acceptable latency time (in seconds)</div>
+      <div class="tooltip">API call for project-specific definition</div>
     </div>
+
+    <div style="display: flex; align-items: center;"> 
     <UInput 
     v-model="latencySeconds" 
-    placeholder="X seconds"
-    style="width: 300px;"  />
+    style="width: 50px;"  />
+    <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+  </div>
     <br />
 
       <!-- Dynamic Sentence -->
       <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
-  <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ mostLatency }} ]of requests will have a maximum latency of [{{ latencySeconds }}]. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
+  <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
 </p>
 <br/>
 <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics">Do these metrics make sense?</UButton>
@@ -89,12 +151,16 @@
 <br/>
 
 <!-- Display the 2nd call -->
- <p v-if="secondResponse">
-  <span class ="AIgeneratedtext">{{ secondResponse }}</span>
+<p v-if="secondResponse">
+  <span class="AIgeneratedtext">
+    <ul>
+      <li v-for="(bullet, index) in splitByDash(secondResponse)" :key="index" class="spaced-bullet">{{ bullet }}</li>
+    </ul>
+  </span>
 </p>
 
 <br/>
-<span class="AIgeneratedtext" id="cautiontext"> Highlighted text has been generated by AI </span>
+<span class="AIgeneratedtext" id="cautiontext"> Highlighted text was generated by AI. Verify information as ChatGPT can make mistakes </span>
 </div>
 </div>
 
@@ -109,6 +175,48 @@ import { ref, onMounted, computed } from 'vue';
 import { openai } from '~/composables/openai';
 
 export default {
+  data() {
+    return {
+      selectedOption: '',
+      otherOptionValue: '',
+      showOtherOption: false,
+      OtherDeploymentOption: '',
+      infrastructureDetails: '', 
+      deploymentInfrastructure: '', // v-model for the select field
+      otherInputValue: '', // v-model for the other input field
+      showOtherInput: false, // To control the visibility of the input field
+      showOtherInputDeployment: false,
+      secondoptions: [
+        'Cloud (enables scalable, remote access to computational resources and storage for inference)', 
+        'On-premise (model runs on local, in-house servers, offering full control over the environment but requiring in-house maintenance)', 
+        'Edge (allows real-time predictions and low-latency while minimizing the need for data transmission to centralized servers)', 
+        'TBD', 
+        'Other'
+      ],
+
+      options: [
+        'Batch Inference (the model makes predictions on a bunch of common unlabeled examples and then caches those prediction)',
+        'Streaming Inference (model only makes predictions on demand)',
+        'TBD',
+        'Other',
+        ],
+  
+    };
+  },
+  methods: {
+    toggleOtherOption() {
+      this.showOtherOption = this.selectedOption === 'other';
+    },
+    handleSelection() {
+      // Show the input field if "Other" is selected
+      this.showOtherInput = this.deploymentInfrastructure === 'Other';
+    },
+
+    handleSelectionDeployment(){
+      this.showOtherInputDeployment = this.infrastructureDetails === 'Other';
+    }
+
+  },
   name: 'InferenceLatencyForm',
   props: {
     MLTask: {
@@ -124,8 +232,18 @@ export default {
     const deploymentInfrastructure = ref<string | null>(null);
     const infrastructureDetails = ref<string | null>(null);
     const averageLatency = ref<string | null>(null);
-    const mostLatency = ref<string | null>(null);
+    const PercentageLatency = ref<string | null>(null);
     const latencySeconds = ref<string | null>(null);
+
+    
+    const splitByDash = (text) => {
+    return text
+      .split('-')
+      .map(item => `- ${item.trim()}`) // Keep the "-" character and trim spaces
+      .filter(Boolean);
+
+
+  };
 
     //  first word of deploymentInfrastructure and detailsa
     const firstWordOfDeploymentInfrastructure = computed(() => {
@@ -142,7 +260,7 @@ export default {
       return '';
     });
 
-    const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science.';
+    const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science. Offer thoughful criticism.';
 
     const getChatResponse = async () => {
       const { chat } = openai();
@@ -180,16 +298,40 @@ export default {
             role: 'user',
             content: `Please review the following latency metrics for ${props.MLTask}:
             - Average Latency: ${averageLatency.value} seconds
-            - Most Latency: ${mostLatency.value}% requests should meet this latency
+            - Percentage of Requests to Meet Target: ${PercentageLatency.value}% requests should meet this latency
             - Latency in Seconds: ${latencySeconds.value} seconds
+            - The Inference option for this project is ${deploymentInfrastructure.value}
+            - The deployment infraestructure for this project is ${infrastructureDetails.value}
 
-            Do these metrics make sense? What would you suggest?`,
+            Do these metrics seem reasonable for this project? use language targeted for data scientists and write only three brief 
+            bullet points only for: Average Latency, percentage of Requests to Meet Target and Latency in Seconds
+            
+            For example: 
+            - Average Latency: [is it reasonable considering the inference options and the deployment selection?]
+            - percentage of Requests to Meet Target [is it reasonable considering the inference options and the deployment selection?]
+            - Latency in Seconds [is it reasonable considering the inference options and the deployment selection?]`,
           },
         ];
 
+
+        function cleanChatGPTOutput(text) {
+          return text
+    .replace(/[{}"*]/g, '') // Remove braces and quotes
+    .replace(/\n/g, ' ')   // Replace newlines with a space
+    .replace(/\s+/g, ' ')  // Replace multiple spaces with a single space
+    .trim();              // Trim any leading or trailing spaces
+}
+
+function splitByDash(text) {
+  return text
+    .split('-')
+    .map(item => `- ${item.trim()}`) // Add the "-" back and trim spaces
+    .filter(Boolean); // Remove empty items
+}
         const chatResponse = await chat(messages, 'gpt-3.5-turbo');
         const splitResponse = chatResponse.split('\n\n');
-        secondResponse.value = splitResponse;  
+        secondResponse.value = cleanChatGPTOutput(splitResponse.join(' ')); 
+        
       } catch (error) {
         console.error('Error fetching metrics response:', error);
       }
@@ -206,14 +348,17 @@ export default {
       deploymentInfrastructure,
       infrastructureDetails,
       averageLatency,
-      mostLatency,
+      PercentageLatency,
       latencySeconds,
       firstWordOfDeploymentInfrastructure, 
       firstWordOfinfrastructureDetails,
       checkMetrics,
+      splitByDash,
+
     };
   },
 };
+
 </script>
 
 
@@ -268,5 +413,17 @@ export default {
   font-size: 12px;
   font-style: italic;
   text-align: center;
+}
+.spaced-bullet {
+  margin-bottom: 10px; 
+}
+.highlighted-bullet {
+  background-color: #f0f8ff; /* Light blue background */
+  padding: 10px;             /* Adds padding for better spacing */
+  border-radius: 5px;        /* Rounded corners */
+  margin-bottom: 10px;       /* Space between bullet points */
+  font-weight: bold;         /* Makes the text bold */
+  color: #333;               /* Text color for readability */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
 }
 </style>
