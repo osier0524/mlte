@@ -12,12 +12,19 @@
 
 <div>
     <!-- Deployment Option -->
-    <label><b>Who may need explanations from the model/system outputs? </b></label>
+    <label><b>Stakeholder or Recipient of the explanation</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
     </div>
-    <UInput size="sm" v-model="stakeholder" />
+     <!-- USelect Component -->
+  <USelect
+    placeholder="Select an option..."
+    icon="i-heroicons-magnifying-glass-20-solid"
+    v-model="stakeholder"
+    style="width: 300px;"
+    :options="stakeholder_list"
+  />
     <br />
 
     <!-- Deployment Infrastructure -->
@@ -91,6 +98,7 @@ export default {
   setup(props) {
     const response = ref('');
     const stakeholder = ref('');
+    const stakeholder_list = ref('');
     const deploymentInfrastructure = ref<string | null>(null);
     const infrastructureDetails = ref<string | null>(null);
     const averageLatency = ref<string | null>(null);
@@ -154,6 +162,11 @@ export default {
     };
   },
 };
+
+// explainability list
+const stakeholder_list = ['Wade Cooper', 'Arlene Mccoy', 'Devon Webb', 'Tom Cook', 'Tanya Fox', 'Hellen Schmidt', 'Caroline Schultz', 'Mason Heaney', 'Claudie Smitham', 'Emil Schaefer']
+
+const stakeholder = ref(stakeholder_list[0])
 </script>
 
 

@@ -1,90 +1,479 @@
 <template>
   <div>
     <br />
-    <p>Training latency is the time it takes to train a machine learning model on a dataset. For a flower classification model on a handheld device, low training latency is crucial for quickly updating the model with new data, ensuring it remains accurate and effective without causing extended delays in development or updates.</p>
+    <!-- API call -->
+    <div class="chatgptcall">
+      <p><b>What's Training Latency?</b> </p>
+      <p>
+        Training latency refers to the time taken for a trained model to process an input and generate a prediction. 
+        <span class="AIgeneratedtext">{{ response }} </span>
+      </p>
+    </div>
     <br />
-    <h2><b> </b></h2>
+    <!-- <p> <b>What does that mean for your project?</b></p> -->
+    <p><b>Create a Quality Scenario</b></p>
+    <br/>
+<div>  
+  <!-- 1 Inference Option -->
+  <label><b>Inference Option</b></label>
+  <div class="info-container">
+    <span class="info-icon">i</span>
+    <div class="tooltip">API call for project-specific definition</div>
+  </div>
 
+  <!-- USelect Component -->
+  <USelect
+    placeholder="Select an option..."
+    :options="options"
+    icon="i-heroicons-magnifying-glass-20-solid"
+    v-model="deploymentInfrastructure"
+    @change="handleSelection"
+    style="width: 300px;"
+  />
+
+  <!-- Conditionally show input field for 'Other' -->
+  <br />
+  <div v-if="showOtherInput">
+    <label for="otherInput"><b>*Specify Your Choice</b> </label>
+    <UInput v-model="OtherInferenceOption" placeholder="Specify your training option" style="width: 300px;" />
+  </div>
+
+  <br/>
+
+  <div>
+    <!-- Deployment Infrastructure -->
     <label><b>Deployment Infrastructure</b></label>
+    <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div>
+
+    <!-- Deployment Infrastructure Selection -->
     <USelect
       placeholder="Select an option..."
-      :options="['Cloud', 'On-premise', 'Edge']"
+      :options="secondoptions"
       icon="i-heroicons-magnifying-glass-20-solid"
       v-model="infrastructureDetails"
-    >
-      <template v-slot:info-icon>
-        <i-heroicons-information-circle-20-solid />
-        <p>Info Tip: This field represents the environment where the model will be deployed. Choose the most suitable option based on your project's requirements.</p>
-      </template>
-    </USelect>
-    <br />
+      @change="handleSelectionDeployment"
+      style="width: 300px;" 
+    />
+    <br /> 
 
-    <label><b>Frequency of retraining </b></label>
-    <USelect
-      placeholder="Select an option..."
-      :options="['Never', 'To be defined']"
-      icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="strategies"
-    >
-      <template v-slot:info-icon>
-        <i-heroicons-information-circle-20-solid />
-        <p>Info Tip: Indicate how often the model will need to be retrained with new data to maintain its accuracy and relevance.</p>
-      </template>
-    </USelect>
-    <br />
-
-    <label><b> Are you considering energy usage and carbon footprint in your model?</b></label>
-    <USelect
-      placeholder="Select an option..."
-      :options="['Yes', 'No']"
-      icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="strategies"
-    >
-      <template v-slot:info-icon>
-        <i-heroicons-information-circle-20-solid />
-        <p>Info Tip: Consider the environmental impact of your model's training and deployment processes, especially in terms of energy consumption and carbon emissions.</p>
-      </template>
-    </USelect>
-    <br />
-
-    <label><b> Trade-offs to Consider:</b></label>
-    <ul>
-      <li><b> - Model Accuracy vs. Training Speed:</b></li>
-      <li><b> - Feature Engineering vs. Training Speed</b> </li>
-    </ul>
-
-    <br />
+    <!-- Conditionally show input field for Other -->
+    <div v-if="showOtherInputDeployment">
+      <label for="otherInput"><b>*Specify Other Deployment Infrastructure</b></label>
+      <UInput v-model="OtherDeploymentOption" placeholder="Specify your deployment infrastructure" style="width: 300px;" />
+    </div>
   </div>
+
+  <br/>
+
+    <!-- Inference Latency Metrics -->
+    <label><b>Average Expected Latency in Seconds</b></label>
+    <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div>
+    <div style="display: flex; align-items: center;"> 
+    <UInput 
+    v-model="averageLatency" 
+    style="width: 50px;" 
+     />
+     <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+     </div>
+    <br />
+
+
+    
+    <label><b>Percentage of Requests to Meet Target</b></label>
+    <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div>
+    <div style="display: flex; align-items: center;"> 
+    <UInput v-model="PercentageLatency" style="width: 50px;"  />
+    <p style="margin-left:8px; margin-bottom:0;">%</p>
+    </div>
+    <br />
+
+    <label><b>Latency in Seconds</b></label>
+    <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div>
+
+    <div style="display: flex; align-items: center;"> 
+    <UInput 
+    v-model="latencySeconds" 
+    style="width: 50px;"  />
+    <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+  </div>
+    <br />
+
+      <!-- Dynamic Sentence -->
+      <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
+  <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
+</p>
+<br/>
+<UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics" :style="{color: 'black'}" ><b>Do these metrics make sense?</b></UButton>
+
+<br/>
+<br/>
+
+<!-- Display the 2nd call -->
+
+<p v-if="secondResponse && secondResponse.length > 0">
+    <span class="AIgeneratedtext">
+        <ul>
+            <li v-for="(bullet, index) in secondResponse" :key="index" class="spaced-bullet">{{ bullet }}</li>
+        </ul>
+    </span>
+</p>
+
+
+<br/>
+</div>
+</div>
+
+
+<!-- SAVE BUTTON --> 
+<div style="display: flex; align-items: center;">
+    <UButton color="yellow" :disabled="!isFormComplete" @click="saveForm" :style="{color: 'black', width: '80px', justifyContent: 'center', alignItems: 'center'}">
+        <b>Save</b>
+    </UButton>
+    <p v-if="saveStatusMessage" style="color: gray; margin-left: 10px; font-size: 14px;">
+        {{ saveStatusMessage }}
+    </p>
+</div>
+
+<br/>
+
+<span class="AIgeneratedtext" id="cautiontext"> Highlighted text was generated by AI. Verify information as ChatGPT can make mistakes </span>
+
+
+<p> </p>
+
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import type { _textColor } from '#tailwind-config/theme';
+import { ref, onMounted, computed } from 'vue';
+import { openai } from '~/composables/openai';
 
-// data from the negotiation card 
 export default {
+  data() {
+    return {
+      selectedOption: '',
+      otherOptionValue: '',
+      showOtherOption: false,
+      OtherDeploymentOption: '',
+      infrastructureDetails: '', 
+      deploymentInfrastructure: '', // v-model for the select field
+      otherInputValue: '', // v-model for the other input field
+      showOtherInput: false, // To control the visibility of the input field
+      showOtherInputDeployment: false,
+      secondoptions: [
+        'Cloud (enables scalable, remote access to computational resources and storage for inference)', 
+        'On-premise (model runs on local, in-house servers, offering full control over the environment but requiring in-house maintenance)', 
+        'Edge (allows real-time predictions and low-latency while minimizing the need for data transmission to centralized servers)', 
+        'TBD', 
+        'Other'
+      ],
+
+      options: [
+        'Batch Inference (the model makes predictions on a bunch of common unlabeled examples and then caches those prediction)',
+        'Streaming Inference (model only makes predictions on demand)',
+        'TBD',
+        'Other',
+        ],
+  
+    };
+  },
+
+  // METHODS 
+  methods: {
+    toggleOtherOption() {
+      this.showOtherOption = this.selectedOption === 'other';
+    },
+    handleSelection() {
+      // Show the input field if "Other" is selected
+      this.showOtherInput = this.deploymentInfrastructure === 'Other';
+    },
+
+    handleSelectionDeployment(){
+      this.showOtherInputDeployment = this.infrastructureDetails === 'Other';
+    }
+
+  },
+
+  // COMPONENT METADATA
   name: 'InferenceLatencyForm',
   props: {
     MLTask: {
-      type: String,
       required: true,
     },
     usageContext: {
-      type: String,
       required: true,
     },
   },
-  setup() {
-    // reactive vars
+
+  // SETUP 
+  setup(props) {
+    const response = ref('');
+    const secondResponse = ref('');
     const deploymentInfrastructure = ref<string | null>(null);
     const infrastructureDetails = ref<string | null>(null);
+    const averageLatency = ref<string | null>(null);
+    const PercentageLatency = ref<string | null>(null);
+    const latencySeconds = ref<string | null>(null);
+
+    // New state for save status
+    const saveStatusMessage = ref('');
+
+    // Computed property to check if the form is complete
+    const isFormComplete = computed(() => {
+        return (
+            deploymentInfrastructure.value &&
+            infrastructureDetails.value &&
+            averageLatency.value &&
+            PercentageLatency.value &&
+            latencySeconds.value
+        );
+    });
+
+    const saveForm = () => {
+        // Here you can save the data. This is a simple example.
+        const formData = {
+            deploymentInfrastructure: deploymentInfrastructure.value,
+            infrastructureDetails: infrastructureDetails.value,
+            averageLatency: averageLatency.value,
+            PercentageLatency: PercentageLatency.value,
+            latencySeconds: latencySeconds.value,
+        };
+         // Save to local storage
+        localStorage.setItem('formData', JSON.stringify(formData));
+        // Simulate saving the data (e.g., make an API call)
+        // You can replace this with actual API call logic
+        console.log("Saving form data:", formData);
+        
+        // Set a success message
+        saveStatusMessage.value = "Form saved successfully";
+
+
+    };
+
+    // UTILITY FUNCTIONS
+  //   const splitByDash = (text) => {
+  //   return text
+  //     .split('-')
+  //     .map(item => `- ${item.trim()}`) // Keep the "-" character and trim spaces
+  //     .filter(Boolean);
+
+
+  // };
+
+  // COMPUTED PROPERTIES
+    //  first word of deploymentInfrastructure and detailsa
+    const firstWordOfDeploymentInfrastructure = computed(() => {
+      if (deploymentInfrastructure.value) {
+        return deploymentInfrastructure.value.split(' ')[0]; 
+      }
+      return '';
+    });
+
+    const firstWordOfinfrastructureDetails = computed(() => {
+      if (infrastructureDetails.value) {
+        return infrastructureDetails.value.split(' ')[0]; 
+      }
+      return '';
+    });
+
+    // OPEN AI API INTEGRATION
+
+    // FIRST CALL
+    const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science. Offer thoughful criticism.';
+
+    const getChatResponse = async () => {
+      const { chat } = openai();
+      try {
+        const messages = [
+          {
+            role: 'system',
+            content: chat_role,
+          },
+          {
+            role: 'user',
+            content: `Write one sentence to explain the potential consequences of not considering inference latency in the context of ${props.MLTask} and ${props.usageContext}. Use simple language that data scientists would understand`,
+          },
+        ];
+
+        const chatResponse = await chat(messages, 'gpt-3.5-turbo');
+        const splitResponse = chatResponse.split('\n\n');
+        response.value = splitResponse[0];
+      } catch (error) {
+        console.error('Error fetching chat response:', error);
+      }
+    };
+
+
+    // Second API call on button click
+    const checkMetrics = async () => {
+    const { chat } = openai();
+    try {
+        const messages = [
+            {
+                role: 'system',
+                content: chat_role,
+            },
+            {
+                role: 'user',
+                content: `Please review the following latency metrics for ${props.MLTask}:
+                - Average Latency: ${averageLatency.value} seconds
+                - Percentage of Requests to Meet Target: ${PercentageLatency.value}% requests should meet this latency
+                - Latency in Seconds: ${latencySeconds.value} seconds
+                - The Inference option for this project is ${deploymentInfrastructure.value}
+                - The deployment infrastructure for this project is ${infrastructureDetails.value}
+
+
+                Do these metrics seem reasonable for this project? Please respond with three brief bullet points:
+                - [check mark or caution emoji] Average Latency: 
+                - [check mark or caution emoji] Percentage of Requests to Meet Target: 
+                - [check mark or caution emoji] Latency in Seconds: 
+                if the answer is reasonable, then provide a green check mark emoji. If the answer is not reasonable or changes are suggested, provide a waning emoji in the [emoji] space.
+    
+                Consider that data scientists may have the following misconceptions: 
+                - Data scientists might focus only on optimizing the model to reduce latency, overlooking other sources of high latency 
+                such as data preprocessing, feature extraction, or system integration.
+                - Data scientists might not understand how high inference latency affects user experience which can lead to dissatisfaction and reduced user engagement
+                - Data scientists might not be aware of the impact of model size on latency, where larger models typically require more processing time.
+
+
+                `
+                
+                ,
+            },
+        ];
+
+        const chatResponse = await chat(messages, 'gpt-3.5-turbo');
+        
+        // Clean the chat response and extract the bullet points
+        secondResponse.value = formatSecondResponse(chatResponse);
+    } catch (error) {
+        console.error('Error fetching metrics response:', error);
+    }
+};
+
+// Function to format the second API response
+function formatSecondResponse(text) {
+    // Split the response into lines and filter out empty lines
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    
+    // Map lines to create a bullet point list and return only the first three items
+    const bullets = lines.slice(0, 3).map(line => line.trim());
+    
+    // Return the formatted output
+    return bullets;
+}
+
+
+    // HOOK
+    onMounted(() => {
+      getChatResponse(); // initial call 
+        // Load data from local storage
+        const storedData = localStorage.getItem('formData');
+        if (storedData) {
+        const formData = JSON.parse(storedData);
+        deploymentInfrastructure.value = formData.deploymentInfrastructure;
+        infrastructureDetails.value = formData.infrastructureDetails;
+        averageLatency.value = formData.averageLatency;
+        PercentageLatency.value = formData.PercentageLatency;
+        latencySeconds.value = formData.latencySeconds;
+    }
+    });
 
     return {
+      response,
+      secondResponse,
       deploymentInfrastructure,
       infrastructureDetails,
+      averageLatency,
+      PercentageLatency,
+      latencySeconds,
+      firstWordOfDeploymentInfrastructure, 
+      firstWordOfinfrastructureDetails,
+      checkMetrics,
+      //splitByDash,
+      saveStatusMessage,   
+      isFormComplete,      
+      saveForm,  
     };
   },
 };
 </script>
 
+
 <style scoped>
+.AIgeneratedtext{
+  background-color: #efe8c7;
+}
+
+.info-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  font-weight: bold;
+  font-family: Arial, cursive;
+  font-size: 10px;
+  cursor: pointer;
+  margin-left: 5px;
+  position: relative;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  top: 25px; 
+  left: 0;
+  z-index: 10;
+}
+
+.info-container:hover .tooltip {
+  display: block;
+}
+
+.info-container {
+  position: relative;
+  display: inline-block;
+}
+
+#cautiontext{
+  font-size: 12px;
+  font-style: italic;
+  text-align: center;
+}
+.spaced-bullet {
+  margin-bottom: 10px; 
+}
+.highlighted-bullet {
+  background-color: #f0f8ff; /* Light blue background */
+  padding: 10px;             /* Adds padding for better spacing */
+  border-radius: 5px;        /* Rounded corners */
+  margin-bottom: 10px;       /* Space between bullet points */
+  font-weight: bold;         /* Makes the text bold */
+  color: #333;               /* Text color for readability */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+}
 </style>

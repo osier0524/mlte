@@ -11,44 +11,17 @@
     </div>
     <br />
     <!-- <p> <b>What does that mean for your project?</b></p> -->
-    <p><b>Create a Quality Scenario</b></p>
+   <p><b>Create a Quality Scenario</b></p>
     <br/>
-<div>
-
- <!-- Deployment Option- alternative 
-  <select v-model="selectedOption" @change="toggleOtherOption">
-    <option value="option1">Batch Inference (the model makes predictions on a bunch of common unlabeled examples and then caches those prediction)</option>
-    <option value="option2">Streaming Inference (model only makes predictions on demand)</option>
-    <option value="option3"> To Be Defined </option>
-    <option value="other">Other</option>
-  </select>
-
-  <div v-if="showOtherOption">
-    <label for="otherOption">Other:</label>
-    <UInput v-model="value" />
-  </div> -->
-
-    <!-- Deployment Option -->
-    <!-- <label><b>Inference Option</b></label>
-    <div class="info-container">
-      <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div>
-    <USelect
-      placeholder="Select an option..."
-      :options="['Batch Inference (the model makes predictions on a bunch of common unlabeled examples and then caches those prediction)', 'Streaming Inference (model only makes predictions on demand)', 'To Be Defined','Other']"
-      icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="deploymentInfrastructure"
-      style="width: 300px;" 
-    />
-    <br /> -->
-
-    
+<div>  
   <!-- 1 Inference Option -->
   <label><b>Inference Option</b></label>
   <div class="info-container">
     <span class="info-icon">i</span>
-    <div class="tooltip">API call for project-specific definition</div>
+    <div class="tooltip">
+     <span>  {{thirdResponse }}</span>
+      
+    </div>
   </div>
 
   <!-- USelect Component -->
@@ -64,18 +37,21 @@
   <!-- Conditionally show input field for 'Other' -->
   <br />
   <div v-if="showOtherInput">
-    <label for="otherInput"><b>*Specify Your Choice</b> </label>
+    <label for="otherInput"><b>*Specify Other Inference Option</b> </label>
     <UInput v-model="OtherInferenceOption" placeholder="Specify your inference option" style="width: 300px;" />
+    <br /> 
   </div>
 
-  <br/>
+  <!-- <br/> -->
 
   <div>
     <!-- Deployment Infrastructure -->
     <label><b>Deployment Infrastructure</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
+      <div class="tooltip">
+        {{ fourthResponse }}
+      </div>
     </div>
 
     <!-- Deployment Infrastructure Selection -->
@@ -93,17 +69,22 @@
     <div v-if="showOtherInputDeployment">
       <label for="otherInput"><b>*Specify Other Deployment Infrastructure</b></label>
       <UInput v-model="OtherDeploymentOption" placeholder="Specify your deployment infrastructure" style="width: 300px;" />
+      <br /> 
     </div>
+   
   </div>
 
-  <br/>
+  <!-- <br/> -->
+
+  <!-- <p><b>Specific Requirements</b></p> -->
+    <!-- <br/> -->
 
     <!-- Inference Latency Metrics -->
-    <label><b>Average Expected Latency in Seconds</b></label>
-    <div class="info-container">
+    <label><b>Average Expected Latency</b></label>
+    <!-- <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
-    </div>
+    </div> -->
     <div style="display: flex; align-items: center;"> 
     <UInput 
     v-model="averageLatency" 
@@ -114,63 +95,81 @@
     <br />
 
 
-    
+    <div style="display: flex; align-items: flex-start;">
+  <!-- Percentage of Requests to Meet Target -->
+  <div style="margin-right: 50px;">
     <label><b>Percentage of Requests to Meet Target</b></label>
-    <div class="info-container">
+    <!-- <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
-    </div>
+    </div> -->
     <div style="display: flex; align-items: center;"> 
-    <UInput v-model="PercentageLatency" style="width: 50px;"  />
-    <p style="margin-left:8px; margin-bottom:0;">%</p>
+      <UInput v-model="PercentageLatency" style="width: 50px;" />
+      <p style="margin-left:8px; margin-bottom:0;">%</p>
     </div>
-    <br />
-
-    <label><b>Latency in Seconds</b></label>
-    <div class="info-container">
-      <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div>
-
-    <div style="display: flex; align-items: center;"> 
-    <UInput 
-    v-model="latencySeconds" 
-    style="width: 50px;"  />
-    <p style="margin-left:8px; margin-bottom:0;">seconds</p>
   </div>
-    <br />
+
+  <!-- Expected Latency -->
+  <div>
+    <label><b>Expected Latency</b></label>
+    <!-- <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div> -->
+    <div style="display: flex; align-items: center;"> 
+      <UInput v-model="latencySeconds" style="width: 50px;" />
+      <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+    </div>
+  </div>
+</div>
+
+<br/>
 
       <!-- Dynamic Sentence -->
       <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
   <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
 </p>
 <br/>
-<UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics">Do these metrics make sense?</UButton>
+<UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics" :style="{color: 'black'}" ><b>Do these metrics make sense?</b></UButton>
 
 <br/>
 <br/>
 
-<!-- Display the 2nd call -->
-<p v-if="secondResponse">
-  <span class="AIgeneratedtext">
-    <ul>
-      <li v-for="(bullet, index) in splitByDash(secondResponse)" :key="index" class="spaced-bullet">{{ bullet }}</li>
+<!--  the 2nd call -->
+<p v-if="secondResponse && secondResponse.length > 0">
+    <ul class="AIgeneratedtext"> 
+        <li v-for="(bullet, index) in secondResponse" :key="index" class="spaced-bullet">{{ bullet }}</li>
     </ul>
-  </span>
 </p>
 
+
+
 <br/>
-<span class="AIgeneratedtext" id="cautiontext"> Highlighted text was generated by AI. Verify information as ChatGPT can make mistakes </span>
 </div>
 </div>
 
-<!-- -->
+
+<!-- SAVE BUTTON --> 
+<div style="display: flex; align-items: center;">
+    <UButton color="yellow" :disabled="!isFormComplete" @click="saveForm" :style="{color: 'black', width: '80px', justifyContent: 'center', alignItems: 'center'}">
+        <b>Save</b>
+    </UButton>
+    <p v-if="saveStatusMessage" style="color: gray; margin-left: 10px; font-size: 14px;">
+        {{ saveStatusMessage }}
+    </p>
+</div>
+
+<br/>
+
+<span class="AIgeneratedtext" id="cautiontext"> Highlighted text was generated by AI. Verify information as ChatGPT can make mistakes </span>
+
 
 <p> </p>
 
 </template>
 
 <script lang="ts">
+import type { _textColor } from '#tailwind-config/theme';
 import { ref, onMounted, computed } from 'vue';
 import { openai } from '~/composables/openai';
 
@@ -203,6 +202,8 @@ export default {
   
     };
   },
+
+  // METHODS 
   methods: {
     toggleOtherOption() {
       this.showOtherOption = this.selectedOption === 'other';
@@ -217,6 +218,8 @@ export default {
     }
 
   },
+
+  // COMPONENT METADATA
   name: 'InferenceLatencyForm',
   props: {
     MLTask: {
@@ -226,25 +229,65 @@ export default {
       required: true,
     },
   },
+
+  // SETUP 
   setup(props) {
     const response = ref('');
     const secondResponse = ref('');
+    const thirdResponse = ref('');
+    const fourthResponse = ref('');
     const deploymentInfrastructure = ref<string | null>(null);
     const infrastructureDetails = ref<string | null>(null);
     const averageLatency = ref<string | null>(null);
     const PercentageLatency = ref<string | null>(null);
     const latencySeconds = ref<string | null>(null);
 
-    
-    const splitByDash = (text) => {
-    return text
-      .split('-')
-      .map(item => `- ${item.trim()}`) // Keep the "-" character and trim spaces
-      .filter(Boolean);
+    // New state for save status
+    const saveStatusMessage = ref('');
+
+    // Computed property to check if the form is complete
+    const isFormComplete = computed(() => {
+        return (
+            deploymentInfrastructure.value &&
+            infrastructureDetails.value &&
+            averageLatency.value &&
+            PercentageLatency.value &&
+            latencySeconds.value
+        );
+    });
+
+    const saveForm = () => {
+        // Here you can save the data. This is a simple example.
+        const formData = {
+            deploymentInfrastructure: deploymentInfrastructure.value,
+            infrastructureDetails: infrastructureDetails.value,
+            averageLatency: averageLatency.value,
+            PercentageLatency: PercentageLatency.value,
+            latencySeconds: latencySeconds.value,
+        };
+         // Save to local storage
+        localStorage.setItem('formData', JSON.stringify(formData));
+        // Simulate saving the data (e.g., make an API call)
+        // You can replace this with actual API call logic
+        console.log("Saving form data:", formData);
+        
+        // Set a success message
+        saveStatusMessage.value = "Form saved successfully";
 
 
-  };
+    };
 
+    // UTILITY FUNCTIONS
+  //   const splitByDash = (text) => {
+  //   return text
+  //     .split('-')
+  //     .map(item => `- ${item.trim()}`) // Keep the "-" character and trim spaces
+  //     .filter(Boolean);
+
+
+  // };
+
+  // COMPUTED PROPERTIES
     //  first word of deploymentInfrastructure and detailsa
     const firstWordOfDeploymentInfrastructure = computed(() => {
       if (deploymentInfrastructure.value) {
@@ -260,6 +303,9 @@ export default {
       return '';
     });
 
+    // OPEN AI API INTEGRATION
+
+    // FIRST CALL
     const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science. Offer thoughful criticism.';
 
     const getChatResponse = async () => {
@@ -287,64 +333,133 @@ export default {
 
     // Second API call on button click
     const checkMetrics = async () => {
-      const { chat } = openai();
-      try {
+    const { chat } = openai();
+    try {
         const messages = [
-          {
-            role: 'system',
-            content: chat_role,
-          },
-          {
-            role: 'user',
-            content: `Please review the following latency metrics for ${props.MLTask}:
-            - Average Latency: ${averageLatency.value} seconds
-            - Percentage of Requests to Meet Target: ${PercentageLatency.value}% requests should meet this latency
-            - Latency in Seconds: ${latencySeconds.value} seconds
-            - The Inference option for this project is ${deploymentInfrastructure.value}
-            - The deployment infraestructure for this project is ${infrastructureDetails.value}
+            {
+                role: 'system',
+                content: chat_role,
+            },
+            {
+                role: 'user',
+                content: `Please review the following latency metrics for ${props.MLTask}:
+                - Average Latency: ${averageLatency.value} seconds
+                - Percentage of Requests to Meet Target: ${PercentageLatency.value}% requests should meet this latency
+                - Latency in Seconds: ${latencySeconds.value} seconds
+                - The Inference option for this project is ${deploymentInfrastructure.value}
+                - The deployment infrastructure for this project is ${infrastructureDetails.value}
 
-            Do these metrics seem reasonable for this project? use language targeted for data scientists and write only three brief 
-            bullet points only for: Average Latency, percentage of Requests to Meet Target and Latency in Seconds
-            
-            For example: 
-            - Average Latency: [is it reasonable considering the inference options and the deployment selection?]
-            - percentage of Requests to Meet Target [is it reasonable considering the inference options and the deployment selection?]
-            - Latency in Seconds [is it reasonable considering the inference options and the deployment selection?]`,
-          },
+                Do these metrics seem reasonable for this project? Please respond with three brief bullet points:
+                - [warning emoji] Average Latency: 
+                - [check mark emoji] Percentage of Requests to Meet Target: 
+                - [warning emoji] Latency in Seconds: `,
+            },
         ];
 
-
-        function cleanChatGPTOutput(text) {
-          return text
-    .replace(/[{}"*]/g, '') // Remove braces and quotes
-    .replace(/\n/g, ' ')   // Replace newlines with a space
-    .replace(/\s+/g, ' ')  // Replace multiple spaces with a single space
-    .trim();              // Trim any leading or trailing spaces
-}
-
-function splitByDash(text) {
-  return text
-    .split('-')
-    .map(item => `- ${item.trim()}`) // Add the "-" back and trim spaces
-    .filter(Boolean); // Remove empty items
-}
         const chatResponse = await chat(messages, 'gpt-3.5-turbo');
-        const splitResponse = chatResponse.split('\n\n');
-        secondResponse.value = cleanChatGPTOutput(splitResponse.join(' ')); 
         
-      } catch (error) {
+        // Clean the chat response and extract the bullet points
+        secondResponse.value = formatSecondResponse(chatResponse);
+    } catch (error) {
         console.error('Error fetching metrics response:', error);
-      }
-    };
+    }
+};
+
+// Function to format the second API response
+function formatSecondResponse(text) {
+    // Split the response into lines and filter out empty lines
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    
+    // Map lines to create a bullet point list and return only the first three items
+    const bullets = lines.slice(0, 3).map(line => line.trim());
+    
+    // Return the formatted output
+    return bullets;
+}
 
 
+ // Third API call - info icon
+const InfoIcon1 = async () => {
+   const { chat } = openai();
+   try {
+       const messages = [
+           {
+               role: 'system',
+               content: chat_role,
+           },
+           {
+               role: 'user',
+               content: `what inference option is recommended for a ${props.MLTask} project that has the following computing resources: 
+                 Graphics Processing Units (GPUs): 0 
+                 Central Processing Units (CPUs): 1
+                 Memory: 6MiB
+                 Storage: 2KiB
+
+                 The inference options provided are: stream inference, batch inference or other. Provide only a one sentence recommendation.
+               `,
+           },
+       ];
+
+       const thirdchatResponse = await chat(messages, 'gpt-3.5-turbo');
+       thirdResponse.value = formatSecondResponse(thirdchatResponse); // Correct variable assignment
+   } catch (error) {
+       console.error('Error fetching InfoIcon1 response:', error);
+   }
+};
+
+// 4th API call - info icon
+const InfoIcon2 = async () => {
+   const { chat } = openai();
+   try {
+       const messages = [
+           {
+               role: 'system',
+               content: chat_role,
+           },
+           {
+               role: 'user',
+               content: `what deployment infrastructure is recommended for a ${props.MLTask} project that has the following computing resources: 
+                 Graphics Processing Units (GPUs): 0 
+                 Central Processing Units (CPUs): 1
+                 Memory: 6MiB
+                 Storage: 2KiB
+
+                 The deployment infrastructures provided are: edge, on-premise, cloud, or other. Provide only a one sentence recommendation.
+               `,
+           },
+       ];
+
+       const fourthchatResponse = await chat(messages, 'gpt-3.5-turbo');
+       fourthResponse.value = formatSecondResponse(fourthchatResponse); // Correct variable assignment
+   } catch (error) {
+       console.error('Error fetching InfoIcon2 response:', error);
+   }
+};
+
+
+
+    // HOOK
     onMounted(() => {
       getChatResponse(); // initial call 
+      InfoIcon1(); // info icon calls
+      InfoIcon2();
+        // Load data from local storage
+        const storedData = localStorage.getItem('formData');
+        if (storedData) {
+        const formData = JSON.parse(storedData);
+        deploymentInfrastructure.value = formData.deploymentInfrastructure;
+        infrastructureDetails.value = formData.infrastructureDetails;
+        averageLatency.value = formData.averageLatency;
+        PercentageLatency.value = formData.PercentageLatency;
+        latencySeconds.value = formData.latencySeconds;
+    }
     });
 
     return {
       response,
       secondResponse,
+      thirdResponse,
+      fourthResponse,
       deploymentInfrastructure,
       infrastructureDetails,
       averageLatency,
@@ -353,12 +468,13 @@ function splitByDash(text) {
       firstWordOfDeploymentInfrastructure, 
       firstWordOfinfrastructureDetails,
       checkMetrics,
-      splitByDash,
-
+      //splitByDash,
+      saveStatusMessage,   
+      isFormComplete,      
+      saveForm,  
     };
   },
 };
-
 </script>
 
 
@@ -413,17 +529,18 @@ function splitByDash(text) {
   font-size: 12px;
   font-style: italic;
   text-align: center;
+  background-color: #efe8c7;
 }
 .spaced-bullet {
   margin-bottom: 10px; 
 }
 .highlighted-bullet {
-  background-color: #f0f8ff; /* Light blue background */
-  padding: 10px;             /* Adds padding for better spacing */
-  border-radius: 5px;        /* Rounded corners */
-  margin-bottom: 10px;       /* Space between bullet points */
-  font-weight: bold;         /* Makes the text bold */
-  color: #333;               /* Text color for readability */
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+  background-color: #f0f8ff; 
+  padding: 10px;         
+  border-radius: 5px;       
+  margin-bottom: 10px;     
+  font-weight: bold;        
+  color: #333;              
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
 </style>
