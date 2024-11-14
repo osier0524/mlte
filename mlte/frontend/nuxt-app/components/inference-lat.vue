@@ -31,7 +31,7 @@
     icon="i-heroicons-magnifying-glass-20-solid"
     v-model="deploymentInfrastructure"
     @change="handleSelection"
-    style="width: 300px;"
+  
   />
 
   <!-- Conditionally show input field for 'Other' -->
@@ -61,7 +61,6 @@
       icon="i-heroicons-magnifying-glass-20-solid"
       v-model="infrastructureDetails"
       @change="handleSelectionDeployment"
-      style="width: 300px;" 
     />
     <br /> 
 
@@ -81,16 +80,24 @@
 
     <!-- Inference Latency Metrics -->
     <label><b>Average Expected Latency</b></label>
-    <!-- <div class="info-container">
+    <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div> -->
+      <div class="tooltip">{{ExpectedLatencyResponse}}</div>
+    </div>
     <div style="display: flex; align-items: center;"> 
     <UInput 
     v-model="averageLatency" 
     style="width: 50px;" 
      />
-     <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+     <p style="margin-left:8px; margin-bottom:0;">
+
+      <USelect
+          placeholder="unit"
+          variant="outline"
+          :options="['seconds (sec)', 'milliseconds (ms)', 'microseconds (µs)']"
+           v-model="unit_averagelatency"
+      />
+      </p>
      </div>
     <br />
 
@@ -99,10 +106,10 @@
   <!-- Percentage of Requests to Meet Target -->
   <div style="margin-right: 50px;">
     <label><b>Percentage of Requests to Meet Target</b></label>
-    <!-- <div class="info-container">
+    <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div> -->
+      <div class="tooltip">{{ PercenTargetResponse }}</div>
+    </div>
     <div style="display: flex; align-items: center;"> 
       <UInput v-model="PercentageLatency" style="width: 50px;" />
       <p style="margin-left:8px; margin-bottom:0;">%</p>
@@ -112,13 +119,21 @@
   <!-- Expected Latency -->
   <div>
     <label><b>Expected Latency</b></label>
-    <!-- <div class="info-container">
+    <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div> -->
+      <div class="tooltip">{{ExpectedLatency}}n</div>
+    </div>
     <div style="display: flex; align-items: center;"> 
       <UInput v-model="latencySeconds" style="width: 50px;" />
-      <p style="margin-left:8px; margin-bottom:0;">seconds</p>
+      <p style="margin-left:8px; margin-bottom:0;">
+
+<USelect
+    placeholder="unit"
+    variant="outline"
+    :options="['seconds (sec)', 'milliseconds (ms)', 'microseconds (µs)']"
+    v-model="unit_expectedlatency"
+/>
+</p>
     </div>
   </div>
 </div>
@@ -127,7 +142,7 @@
 
       <!-- Dynamic Sentence -->
       <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
-  <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
+  <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}] in [{{unit_averagelatency}}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] in [{{ unit_expectedlatency }}]. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
 </p>
 <br/>
 <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics" :style="{color: 'black'}" ><b>Do these metrics make sense?</b></UButton>
@@ -235,7 +250,13 @@ export default {
     const response = ref('');
     const secondResponse = ref('');
     const thirdResponse = ref('');
+    const cleanedText = ref('');
     const fourthResponse = ref('');
+    const ExpectedLatencyResponse = ref('');
+    const PercenTargetResponse = ref ('');
+    const ExpectedLatency = ref ('');
+    const unit_averagelatency = ref<string | null>(null);
+    const unit_expectedlatency = ref<string | null>(null);
     const deploymentInfrastructure = ref<string | null>(null);
     const infrastructureDetails = ref<string | null>(null);
     const averageLatency = ref<string | null>(null);
@@ -257,7 +278,6 @@ export default {
     });
 
     const saveForm = () => {
-        // Here you can save the data. This is a simple example.
         const formData = {
             deploymentInfrastructure: deploymentInfrastructure.value,
             infrastructureDetails: infrastructureDetails.value,
@@ -401,7 +421,9 @@ const InfoIcon1 = async () => {
        ];
 
        const thirdchatResponse = await chat(messages, 'gpt-3.5-turbo');
-       thirdResponse.value = formatSecondResponse(thirdchatResponse); // Correct variable assignment
+       thirdResponse.value = thirdchatResponse;
+
+
    } catch (error) {
        console.error('Error fetching InfoIcon1 response:', error);
    }
@@ -430,11 +452,108 @@ const InfoIcon2 = async () => {
        ];
 
        const fourthchatResponse = await chat(messages, 'gpt-3.5-turbo');
-       fourthResponse.value = formatSecondResponse(fourthchatResponse); // Correct variable assignment
+       fourthResponse.value = fourthchatResponse;
+
    } catch (error) {
        console.error('Error fetching InfoIcon2 response:', error);
    }
 };
+
+// 5th API call - info icon Expected Latency
+
+const InfoIconExpectedLatency = async () => {
+   const { chat } = openai();
+   try {
+       const messages = [
+           {
+               role: 'system',
+               content: chat_role,
+           },
+           {
+               role: 'user',
+               content: `what average expected latency is recommended for a ${props.MLTask} project that has the following computing resources: 
+                 Graphics Processing Units (GPUs): 0 
+                 Central Processing Units (CPUs): 1
+                 Memory: 6MiB
+                 Storage: 2KiB
+                
+                Consider product and deployment factors: ${props.usageContext}. Provide only a one sentence recommendation.
+               `,
+           },
+       ];
+
+       const chatexpectedLatency = await chat(messages, 'gpt-3.5-turbo');
+       ExpectedLatencyResponse.value = chatexpectedLatency;
+
+   } catch (error) {
+       console.error('Error fetching InfoIconExpectedLatency response:', error);
+   }
+};
+
+
+// 6th API call - info icon Percentage of Requests
+
+const InfoIconPercenTarget = async () => {
+   const { chat } = openai();
+   try {
+       const messages = [
+           {
+               role: 'system',
+               content: chat_role,
+           },
+           {
+               role: 'user',
+               content: `what percentage of requests target to meet is recommended, besides the average, for a ${props.MLTask} project that has the following computing resources: 
+                 Graphics Processing Units (GPUs): 0 
+                 Central Processing Units (CPUs): 1
+                 Memory: 6MiB
+                 Storage: 2KiB
+                
+                Consider product and deployment factors. Provide only a one sentence recommendation with a percentage range you recommend to consider given the production computing resources. Do not mention use first person language.
+               `,
+           },
+       ];
+
+       const chatTarget = await chat(messages, 'gpt-3.5-turbo');
+       PercenTargetResponse.value = chatTarget;
+
+   } catch (error) {
+       console.error('Error fetching InfoIconPercenTarget response:', error);
+   }
+};
+
+// 7th API call - info icon expected latency
+
+const InfoIconLatency = async () => {
+   const { chat } = openai();
+   try {
+       const messages = [
+           {
+               role: 'system',
+               content: chat_role,
+           },
+           {
+               role: 'user',
+               content: `what expected latency to is recommended, considering ${PercentageLatency} for a ${props.MLTask} project that has the following computing resources: 
+                 Graphics Processing Units (GPUs): 0 
+                 Central Processing Units (CPUs): 1
+                 Memory: 6MiB
+                 Storage: 2KiB
+                
+                Consider product and deployment factors: ${props.usageContext}. Provide only a one sentence recommendation with a latency recommendation for the percentage they provided. Do not mention use first person language.
+               `,
+           },
+       ];
+
+       const chatinfoExpectedLatency = await chat(messages, 'gpt-3.5-turbo');
+       ExpectedLatency.value = chatinfoExpectedLatency;
+
+   } catch (error) {
+       console.error('Error fetching InfoIconExpectedLatency response:', error);
+   }
+};
+
+
 
 
 
@@ -443,6 +562,10 @@ const InfoIcon2 = async () => {
       getChatResponse(); // initial call 
       InfoIcon1(); // info icon calls
       InfoIcon2();
+      InfoIconLatency();
+      InfoIconPercenTarget();
+      InfoIconExpectedLatency();
+  
         // Load data from local storage
         const storedData = localStorage.getItem('formData');
         if (storedData) {
@@ -460,13 +583,19 @@ const InfoIcon2 = async () => {
       secondResponse,
       thirdResponse,
       fourthResponse,
+      ExpectedLatencyResponse,
       deploymentInfrastructure,
       infrastructureDetails,
+      ExpectedLatency,
+      cleanedText,
       averageLatency,
       PercentageLatency,
       latencySeconds,
+      unit_averagelatency,
+      unit_expectedlatency,
       firstWordOfDeploymentInfrastructure, 
       firstWordOfinfrastructureDetails,
+      PercenTargetResponse,
       checkMetrics,
       //splitByDash,
       saveStatusMessage,   

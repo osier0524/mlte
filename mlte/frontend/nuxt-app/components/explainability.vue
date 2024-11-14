@@ -13,10 +13,10 @@
     <div>
       <!-- 1) Stakeholders List -->
       <label><b>Stakeholder or Recipient of the explanation</b></label>
-      <div class="info-container">
+      <!-- <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">API call for project-specific definition</div>
-      </div>
+      </div> -->
       <!-- USelect Component -->
       <USelect
         placeholder="Select an option..."
@@ -48,12 +48,21 @@
       />
       <br />
 
+         <!-- Foresee challenges achieving explanation expectations -->
+         <label><b>Foreseeable Consequences of not considering Explainability</b></label>
+      <div class="info-container">
+        <span class="info-icon">i</span>
+        <div class="tooltip">  </div>
+      </div>
+      <UInput size="sm" v-model="consequences" />
+      <br />
+
 
        <!-- Foresee challenges achieving explanation expectations -->
        <label><b>Foreseeable Challenges in Meeting Explainability Expectations</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
-        <div class="tooltip">API call for project-specific definition</div>
+        <div class="tooltip">Expand on what challenges you may encounter </div>
       </div>
       <UInput size="sm" v-model="sourceofexplanation" />
       <br />
@@ -85,7 +94,7 @@
     
 
       <!-- Test Plan -->
-      <label><b>Test Plan</b></label>
+      <label><b>Success Criteria</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">API call for project-specific definition</div>
@@ -104,6 +113,26 @@
     </div>
   </div>
 
+
+  <div>
+              <UTable :rows="tableData" :columns="columns" >
+                  <!-- <template #body-cell="{ item, column, rowIndex}"> -->
+                  <template #pert-data="{ row, column }">
+                      <UInput v-model="row.name" placeholder="Add Perturbation"/>
+                  </template>
+
+                  <template #tolerance-data="{ row, column }">
+                      <UInput v-model="row.email" placeholder="Add Tolerance Level"/>
+                  </template>
+              </UTable>
+          </div>
+
+          <div>
+              <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="addRow">+</UButton>
+              <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="removeRow" :disabled="tableData.length === 0">-</UButton>
+          </div>
+
+          
   <p> </p>
 </template>
 
@@ -134,6 +163,27 @@ export default {
     },
   },
   setup(props) {
+
+    // Define variables related to the table
+    const columns = ref([
+              { key: 'pert', label: 'Perturbations' },
+              { key: 'tolerance', label: 'Tolerance Level' },
+          ]);
+
+          const tableData = ref([
+              { pert: '', tolerance: '' },
+          ]);
+
+          const addRow = () => {
+              tableData.value.push({ pert: '', tolerance: '' });
+          };
+
+          const removeRow = () => {
+              if (tableData.value.length > 0) {
+                  tableData.value.pop();
+              }
+          };
+
     const response = ref('');
     const stakeholder = ref('');
     const stakeholder_list = ref([]);
@@ -167,7 +217,10 @@ export default {
           },
           {
             role: 'user',
-            content: `Write one sentence to explain the potential consequences of not considering proper explainability in the context of ${props.MLTask} and ${props.usageContext}. Use simple language that data scientists would understand`,
+            content: `Write one sentence to explain the potential consequences of not considering proper explainability in the context of ${props.MLTask} and ${props.usageContext}. 
+            Describe why explainability is essential for different levels and stakeholders. Provide concrete examples. Explainability can be used for the following purposes: 
+            Dignity, Transparency for accountability, Legal compliance, Bias detection, risk assessment, Model/System Debugging, Model evaluation, Actionable insights
+            Stakeholder trust, Documentation, Informed decision-making, User Autonomy. Use language targeted for data scientists.`,
           },
         ];
 

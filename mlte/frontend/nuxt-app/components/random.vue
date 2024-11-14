@@ -1,244 +1,268 @@
 <template>
-    <div class="accordion">
-      <div class="accordion-item">
-        <div class="accordion-item-header">
-          
-            Explainability
-          <input type="checkbox" id="formCompleted" disabled />
-          <div class="accordion-item-header-content">
-           
+  <div>
+      <br />
+          <!-- API call -->
+          <div class="chatgptcall">
+          <p><b>What's Robustness?</b> </p>
+          <p>
+              Robustness in machine learning is a model's ability to make consistent predictions even when its input data undergoes slight changes. A robust model should deliver stable outputs, maintaining accuracy and reliability under minor variations in data.
+               
+              <br/>
+              
+              <span class="AIgeneratedtext">{{ robustnessDefinition }} </span>
+              <span class="AIgeneratedtext">{{ response }} </span>
+          </p>
           </div>
-        </div>
-        <div class="accordion-item-body">
-          <div class="accordion-item-body-content">
-            <form @input="checkFormCompletion">
-  
-              <div class="form-group">
-                <p>Explainability is the ability to explain the output of the flower classification model deployed in a handheld flower identification device. Different technical and non-technical stakeholders might 
-                  have different expectations of explainability methods which is why 
-                  it might be helpful to discuss this with them to help you choose the most suitable techniques. </p>
-                  
-                <label for="stakeholders">Stakeholders</label>
-                <select id="stakeholders" name="stakeholders">
-                  <option value="endUser">Behavioral ecologists</option>
-                  <option value="businessAnalyst"></option>
-                  <option value="complianceOfficer">Plant enthusiasts</option>
-                  <option value="developer">Regulatory agencies</option>
-                  <option value="developer">Data Scientists</option>
-                  <option value="custom">Other</option>
-                </select>
-                <input type="text" id="customStakeholder" name="customStakeholder" placeholder="Enter custom stakeholder" style="display: none;" />
-              </div>
-  
-              <div class="form-group">
-                <label for="stimulus">What specific events or actions might trigger the need for an explanation?              </label>
-                <label for="stimulus"> Stimulus</label>
-                <input type="text" id="stimulus" name="stimulus" placeholder="Behavioral ecologist requests explanation for prediction" />
-              </div>
-  
-              <div class="form-group">
-                <label for="stimulusSource">Who needs the explanations?</label>
-                <label for="stimulusSource">Source</label>
-                <input type="text" id="stimulusSource" name="stimulusSource" placeholder="Internal system log" />
-              </div>
-  
-              <div class="form-group">
-                <label for="environment">Are there any specific contexts or situations that impact the explanation requirements?</label>
-                <label for="environment">Environment</label>
-                <input type="text" id="environment" name="environment" placeholder="During peak usage hours" />
-              </div>
-  
-              <div class="form-group">
-                <label for="response">What type of explanation or information should be provided?
-                </label>
-                <label for="response">Response</label>
-                <input type="text" id="response" name="response" placeholder="Explanations for individual predictions" />
-              </div>
-  
-              <div class="form-group">
-                <label for="responseMeasure"> How will you measure if the explanation meets the needs of the stakeholder?              </label>
-                <label for="responseMeasure">Response Measure</label>
-                <input type="text" id="responseMeasure" name="responseMeasure" placeholder="Meet with stakeholder, more than one technique" />
-              </div>
-  
-              <div class="form-group">
-                <label for="explainabilityGoals">Other Explainability Goals in product development</label>
-                <input type="text" id="explainabilityGoals" name="explainabilityGoals" placeholder="Include explainability during marketing" />
-              </div>
-           
-  
-              <div class="form-group">
-                <label for="challenges">Challenges and Constraints</label>
-                <h4> accuracy vs interpretability</h4>
-                <p>consider the tradeoff between accuracy and interpretability in relation to the expectations of stakeholders, ethical implications and business objectives.</p>
-              </div>
-            
-  
-              <button type="button" @click="saveForm" class="save-button">Save</button>
-            </form>
+          <br />
+          <!-- <p> <b>What does that mean for your project?</b></p> -->
+          <p><b>Create a Quality Scenario</b></p>
+          <br/>
+
+          <!-- Task Type Selection -->
+          <label><b>Task Type</b></label>
+          <div class="info-container">
+              <span class="info-icon">i</span>
+              <div class="tooltip">What task type type is yours?</div>
           </div>
-        </div>
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  import { ref, onMounted } from 'vue';
-  
+          <USelect
+              placeholder="Select Task Type..."
+              :options="['Image Processing', 'NLP', 'Structured Data','Others']"
+              icon="i-heroicons-magnifying-glass-20-solid"
+              v-model="robustnessTaskType"
+          />
+          <br />
+
+
+          <label><b>Real-world Perturbation</b></label>
+          <div class="info-container">
+              <span class="info-icon">i</span>
+              <div class="tooltip">In real-world scenarios, what types of perturbations might affect the input data your model receives?</div>
+          </div>
+          <UInput 
+              v-model="perturbations" 
+              placeholder="e.g., lighting conditions, background noise, sensor errors" />
+          <br />
+
+          <label><b>Most Critical Perturbation</b></label>
+          <div class="info-container">
+              <span class="info-icon">i</span>
+              <div class="tooltip">From the perturbations you mentioned, which type of variation are you most concerned about?</div>
+          </div>
+          <UInput 
+              v-model="perturbations" 
+              placeholder="Bluriness"  />
+          <br />
+
+          <div v-if="robustnessTaskType ==='Image Processing'">
+              <label><b>Transformation Option (Image Perocessing)</b></label>
+              <div class="info-container">
+                  <span class="info-icon">i</span>
+                  <div class="tooltip">To test your model's robustness, choose a transformation that you want to apply to your test data.</div>
+              </div>
+              <USelect
+                  placeholder="Select an option..."
+                  :options="['Occulusion', 'Rotation', 'Blurring','Brightness Adjustment', 'Scaling', 'Noise Injection']"
+                  icon="i-heroicons-magnifying-glass-20-solid"
+                  v-model="transformation"
+              />
+              <br />
+          </div>
+
+          <div v-if="robustnessTaskType ==='NLP'">
+              <label><b>Transformation Option (NLP)</b></label>
+              <div class="info-container">
+                  <span class="info-icon">i</span>
+                  <div class="tooltip">To test your model's robustness, choose a transformation that you want to apply to your test data.</div>
+              </div>
+              <USelect
+                  placeholder="Select an option..."
+                  :options="['Synonym Replacement', 'Typos', 'Word Removal','Word Order Shuffling', 'Punctuation Change', 'Entity Replacement', 'Text Augmentation']"
+                  icon="i-heroicons-magnifying-glass-20-solid"
+                  v-model="transformation"
+              />
+              <br />
+          </div>
+
+          <!-- <UTable :rows="people" /> -->
+
+          <div>
+              <UTable :rows="tableData" :columns="columns" >
+                  <!-- <template #body-cell="{ item, column, rowIndex}"> -->
+                  <template #pert-data="{ row, column }">
+                      <UInput v-model="row.name" placeholder="Add Perturbation"/>
+                  </template>
+
+                  <template #tolerance-data="{ row, column }">
+                      <UInput v-model="row.email" placeholder="Add Tolerance Level"/>
+                  </template>
+              </UTable>
+          </div>
+
+          <div>
+              <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="addRow">+</UButton>
+              <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="removeRow" :disabled="tableData.length === 0">-</UButton>
+          </div>
+
+      <br/>
+  </div>
+
+  <div>
+
+  </div>
+</template>
+
+<script lang="ts">
+
   export default {
-    name: 'Accordion',
-    setup() {
-      const formCompleted = ref(false);
-  
-      onMounted(() => {
-        const accordionItemHeaders = document.querySelectorAll('.accordion-item-header');
-  
-        accordionItemHeaders.forEach(accordionItemHeader => {
-          accordionItemHeader.addEventListener('click', event => {
-            accordionItemHeader.classList.toggle('active');
-            const accordionItemBody = accordionItemHeader.nextElementSibling;
-            if (accordionItemHeader.classList.contains('active')) {
-              accordionItemBody.style.maxHeight = accordionItemBody.scrollHeight + 'px';
-            } else {
-              accordionItemBody.style.maxHeight = 0;
-            }
-          });
-        });
-  
-        // Show/hide custom input fields based on selection
-        const stakeholderSelect = document.getElementById('stakeholders');
-        const customStakeholderInput = document.getElementById('customStakeholder');
-        stakeholderSelect.addEventListener('change', () => {
-          customStakeholderInput.style.display = stakeholderSelect.value === 'custom' ? 'block' : 'none';
-        });
-  
-        const toolsSelect = document.getElementById('tools');
-        const customToolInput = document.getElementById('customTool');
-        toolsSelect.addEventListener('change', () => {
-          customToolInput.style.display = toolsSelect.value === 'custom' ? 'block' : 'none';
-        });
-      });
-  
-      const checkFormCompletion = () => {
-        const form = document.querySelector('form');
-        const inputs = form.querySelectorAll('input[type="text"], select');
-        const allFilled = Array.from(inputs).every(input => input.value.trim() !== '' || (input.style.display === 'none'));
-        formCompleted.value = allFilled;
-        document.getElementById('formCompleted').checked = allFilled;
-      };
-  
-      const saveForm = () => {
-        alert('Form has been saved!');
-      };
-  
-      return {
-        formCompleted,
-        checkFormCompletion,
-        saveForm,
-      };
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .accordion {
-    width: 90%;
-    max-width: 1000px;
-    margin: 0.5rem auto;
+      name: 'RobustnessForm',
+      props: {
+          problemType: {
+              required: true,
+          },
+          MLTask: {
+              required: true,
+          },
+          usageContext: {
+              required: true,
+          },
+      },
+      setup(props) {
+
+          // Define variables related to the table
+          const columns = ref([
+              { key: 'pert', label: 'Perturbations' },
+              { key: 'tolerance', label: 'Tolerance Level' },
+          ]);
+
+          const tableData = ref([
+              { pert: '', tolerance: '' },
+          ]);
+
+          const addRow = () => {
+              tableData.value.push({ pert: '', tolerance: '' });
+          };
+
+          const removeRow = () => {
+              if (tableData.value.length > 0) {
+                  tableData.value.pop();
+              }
+          };
+
+          const robustnessTaskType = ref('');
+          const response = ref('');
+          const robustnessDefinition = ref<string | null>(null);
+
+          const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science.';
+
+          
+          const basicDefinition = `Robustness in machine learning is a model's ability to make consistent predictions even when its input data undergoes slight changes. A robust model should deliver stable outputs, maintaining accuracy and reliability under minor variations in data.`;
+          
+          const generateRobustnessDefinition = async () => {
+              const { chat } = openai();
+              try {
+                  const messages = [
+                      {
+                          role: 'system',
+                          content: chat_role,
+                      },
+                      {
+                          role: 'user',
+                          content: `For the following query, craft a response that defines robustness in the user's specific context in a single sentence. 
+                          The response should: 
+                          - Describe robustness using user's scenario:
+                              Problem Type: ${props.problemType}
+                              ML Task: ${props.MLTask}
+                              Usage Context: ${props.usageContext}
+                          - Avoid general definitions like "slight changes in input data" or "consistent predictions." 
+                          Instead, directly use a concrete example to illustrate what robustness means in this scenario.
+                          - Start with "In your context,"
+                          Example: "In your context, robustness means that if measurements are taken under slightly varied lighting conditions 
+                          affecting the perceived size or color of features, the model should still accurately classify the iris species." 
+                          Ensure the response is only one sentence and directly defines robustness with a practical example, as shown in the example above.`,
+                      },
+                  ];
+
+                  const chatResponse = await chat(messages);
+                  robustnessDefinition.value = chatResponse;
+              } catch (error) {
+                  console.error('Error generating definition: ', error);
+              }
+          };
+
+          watch(
+              [() => props.problemType, () => props.MLTask, () => props.usageContext],
+              ([problemType, MLTask, usageContext]) => {
+                  if (problemType && MLTask && usageContext) {
+                      generateRobustnessDefinition();
+                  }
+              },
+              { immediate: true }
+          );
+
+          return {
+              columns,
+              tableData,
+              addRow,
+              removeRow,
+              robustnessTaskType,
+              response,
+              robustnessDefinition,
+          };
+      },
   }
-  
-  .accordion-item {
-    color: black;
-    margin: 0.3rem 0;
-    border-radius: 0.5rem;
-  }
-  
-  .accordion-item-header {
-    padding: 0.5rem 3rem 0.5rem 1rem;
-    min-height: 3.5rem;
-    line-height: 1.25rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    position: relative;
-    cursor: pointer;
-  }
-  
-  .accordion-item-header-content {
-    margin-left: auto;
-    padding-left: 1rem;
-    font-size: 15px;
-  }
-  
-  .accordion-item-header input[type="checkbox"] {
-    margin-right: 1rem;
-  }
-  
-  .accordion-item-header::after {
-    content: ">";
-    font-size: 2rem;
-    position: absolute;
-    left: -10px;
-    transition: transform 0.2s ease-in-out;
-  }
-  
-  .accordion-item-header.active::after {
-    transform: rotate(90deg);
-  }
-  
-  .accordion-item-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease-out;
-  }
-  
-  .accordion-item-body-content {
-    padding: 1rem;
-    line-height: 1.5rem;
-  }
-  
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-  }
-  
-  input, select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 0.25rem;
-  }
-  
-  input[type="text"] {
-    height: 2rem;
-  }
-  
-  select {
-    height: 2.5rem;
-  }
-  
-  input::placeholder {
-    color: #888;
-  }
-  
-  .save-button {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.25rem;
-    background-color: #007bff;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  
-  .save-button:hover {
-    background-color: #0056b3;
-  }
-  </style>
-  
+</script>
+
+<style scoped>
+.AIgeneratedtext{
+background-color: #efe8c7;
+}
+
+.info-icon {
+display: inline-block;
+width: 20px;
+height: 20px;
+background-color: black;
+color: white;
+border-radius: 50%;
+text-align: center;
+line-height: 20px;
+font-weight: bold;
+font-family: Arial, cursive;
+font-size: 10px;
+cursor: pointer;
+margin-left: 5px;
+position: relative;
+}
+
+.tooltip {
+display: none;
+position: absolute;
+background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);
+border: 1px solid #ccc;
+padding: 10px;
+font-size: 12px;
+border-radius: 5px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+width: 200px;
+top: 25px; 
+left: 0;
+z-index: 10;
+}
+
+.info-container:hover .tooltip {
+display: block;
+}
+
+.info-container {
+position: relative;
+display: inline-block;
+}
+
+#cautiontext{
+font-size: 12px;
+font-style: italic;
+text-align: center;
+}
+
+</style>
