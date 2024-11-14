@@ -824,6 +824,12 @@
       </template>
     </Accordion>
 
+    <Accordion title="Robustness">
+      <template #content>
+        <Robustness :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
+      </template>
+    </Accordion>
+
     </div>
     <br/>
 
