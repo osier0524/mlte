@@ -822,7 +822,7 @@
 
     <Accordion title="Explainability">
       <template #content>
-        <Explainability></Explainability>
+        <Explainability MLTask={{ form.system.task }} :usageContext="form.system.usage_context"/> 
       </template>
     </Accordion>
 
