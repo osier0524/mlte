@@ -12,7 +12,7 @@
 
     <div>
       <!-- 1) Stakeholders List -->
-      <label><b>Stakeholder or Recipient of the explanation</b></label>
+      <label><b>Stakeholder or Recipient</b></label>
       <!-- <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">API call for project-specific definition</div>
@@ -37,7 +37,7 @@
       <label><b>Purpose of the Explanations</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
-        <div class="tooltip">API call for project-specific definition</div>
+        <div class="tooltip"> </div>
       </div>
 
       <USelect
@@ -46,10 +46,11 @@
         v-model="purpose"
         :options="purpose_list"
       />
-      <br />
+      
+ 
 
          <!-- Foresee challenges achieving explanation expectations -->
-         <label><b>Foreseeable Consequences of not considering Explainability</b></label>
+         <label><b>Anticipated Consequences of Neglecting Explainability</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">  </div>
@@ -59,7 +60,7 @@
 
 
        <!-- Foresee challenges achieving explanation expectations -->
-       <label><b>Foreseeable Challenges in Meeting Explainability Expectations</b></label>
+       <label><b> Anticipated Challenges to Achieve Explainability Expectations</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">Expand on what challenges you may encounter </div>
@@ -68,7 +69,7 @@
       <br />
 
         <!-- 4) Type of Explanations -->
-        <label><b>Type of Explanation</b></label>
+        <label><b>Type of Explanations</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">API call for project-specific definition</div>
@@ -83,7 +84,7 @@
 
       <br />
       <!-- 3) Language level  -->
-      <label><b>Language Level Expectations</b></label>
+      <label><b>Understandability Expectations</b></label>
       <div class="info-container">
         <span class="info-icon">i</span>
         <div class="tooltip">API call for project-specific definition</div>
@@ -113,26 +114,6 @@
     </div>
   </div>
 
-
-  <div>
-              <UTable :rows="tableData" :columns="columns" >
-                  <!-- <template #body-cell="{ item, column, rowIndex}"> -->
-                  <template #pert-data="{ row, column }">
-                      <UInput v-model="row.name" placeholder="Add Perturbation"/>
-                  </template>
-
-                  <template #tolerance-data="{ row, column }">
-                      <UInput v-model="row.email" placeholder="Add Tolerance Level"/>
-                  </template>
-              </UTable>
-          </div>
-
-          <div>
-              <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="addRow">+</UButton>
-              <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="removeRow" :disabled="tableData.length === 0">-</UButton>
-          </div>
-
-          
   <p> </p>
 </template>
 
@@ -147,6 +128,12 @@ export default {
       explainabilityType: [
         'Global Explanations (explain how the model works)',
         'Local Explanations (explain individual predictions)',
+        'Data Disclosure', 
+        'Counterfactual Instances(local)',
+        'Visualizations',
+        'Surrogate models that are inherently explainable',
+        'Explainable Boosting Machine (local and global)',
+        'Other'
       ],
       // Placeholder for storing selected explanation types
       ExplanationType: [] as string[], 
@@ -166,23 +153,24 @@ export default {
 
     // Define variables related to the table
     const columns = ref([
-              { key: 'pert', label: 'Perturbations' },
-              { key: 'tolerance', label: 'Tolerance Level' },
-          ]);
+  { key: 'stak', label: 'Stakeholder' },
+  { key: 'pur', label: 'Purpose' },
+  { key: 'conseq', label: 'Consequences' },
+]);
 
           const tableData = ref([
-              { pert: '', tolerance: '' },
+              { stak: '', pur: '', conseq:'' },
           ]);
 
           const addRow = () => {
-              tableData.value.push({ pert: '', tolerance: '' });
-          };
+  tableData.value.push({ stak: '', pur: '', conseq: '' }); 
+};
 
-          const removeRow = () => {
-              if (tableData.value.length > 0) {
-                  tableData.value.pop();
-              }
-          };
+const removeRow = () => {
+  if (tableData.value.length > 0) {
+    tableData.value.pop(); // Removing a row
+  }
+};
 
     const response = ref('');
     const stakeholder = ref('');
@@ -217,10 +205,16 @@ export default {
           },
           {
             role: 'user',
-            content: `Write one sentence to explain the potential consequences of not considering proper explainability in the context of ${props.MLTask} and ${props.usageContext}. 
-            Describe why explainability is essential for different levels and stakeholders. Provide concrete examples. Explainability can be used for the following purposes: 
-            Dignity, Transparency for accountability, Legal compliance, Bias detection, risk assessment, Model/System Debugging, Model evaluation, Actionable insights
-            Stakeholder trust, Documentation, Informed decision-making, User Autonomy. Use language targeted for data scientists.`,
+            content: `Write a concise sentence explaining a potential consequence of neglecting proper explainability in the context of
+             ${props.MLTask} and ${props.usageContext} for a non-technical stakeholder of the product. 
+
+            Focus on one of the following purposes for explainability:
+            Human-AI collaboration
+            Oversight
+            Dignity/Autonomy
+
+            Choose one of the purposes listed above to explain why explainability is critical for a non-technical stakeholder. 
+            Provide a brief and concrete example. Use precise and targeted language for data scientists. Do not mention the term trust.`,
           },
         ];
 
@@ -277,7 +271,21 @@ export default {
       },
       {
         role: 'user',
-        content: `Provide a list of purposes a ${selectedStakeholderLabel} would care about Explainability for a ${props.MLTask} model and the context use is ${props.usageContext}. Do not number the list. Do not include subtitles. Do not include descriptions of each purpose.`,
+        content: ` Generate a 5-word sentence description to the list of purposes provided below. Describe why botanists would be interested in an explanation of the ${props.MLTask} model with a context use of ${props.usageContext}.
+        Dignity : [write reason why stakeholder selected cares about explanability]
+        Transparency for accountability: [write reason why stakeholder selected cares about explanability]
+        Legal compliance: [write reason why stakeholder selected cares about explanability]
+        Bias detection: [write reason why stakeholder selected cares about explanability]
+        Risk assessment: [write reason why stakeholder selected cares about explanability]
+        Model/System Debugging: [write reason why stakeholder selected cares about explanability]
+        Model evaluation: [write reason why stakeholder selected cares about explanability]
+        Actionable insights: [write reason why stakeholder selected cares about explanability]
+        Stakeholder trust: [write reason why stakeholder selected cares about explanability]
+        Documentation: [write reason why stakeholder selected cares about explanability]
+        Informed decision-making: [write reason why stakeholder selected cares about explanability]
+        User Autonomy: [write reason why stakeholder selected cares about explanability]
+
+        `,
       },
     ];
 
@@ -313,6 +321,10 @@ export default {
       purpose,
       showOtherInput, 
       OtherStakeholder,
+      addRow,
+      removeRow,
+      columns,
+      tableData,
     };
   },
 };
