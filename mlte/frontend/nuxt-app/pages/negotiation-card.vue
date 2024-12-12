@@ -830,7 +830,7 @@
       <template #content>
         <!-- TODO: pull data from these fields if it is modified while filling out the form-->
          <!-- TODO: Make those fields mandatory in the form -->
-        <InferenceLat MLTask={{ form.system.task }} :usageContext="form.system.usage_context" />
+        <TrainingLat MLTask={{ form.system.task }} :usageContext="form.system.usage_context" />
       </template>
     </Accordion>
 

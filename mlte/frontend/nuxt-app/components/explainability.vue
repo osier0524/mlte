@@ -8,9 +8,19 @@
     </p>
   </div>
   <br />
- 
-  <!-- 1) Stakeholders List -->
-  <label><b>Stakeholder or Recipient</b></label>
+
+<!-- Table-->
+          <div v-for="(field, fieldIndex) in dataItem.fields" :key="fieldIndex">
+            <h3 class="no-margin-sub-header">
+             <b>Stakeholder or Recipient {{ fieldIndex + 1 }} </b> 
+             <InfoIcon>
+                      Field type, e.g., number, string, Boolean, data, image,
+                      audio. 
+                      <br/>
+                    </InfoIcon>
+            </h3>
+
+            <!-- 1) Stakeholders List -->
   <USelect
     placeholder="Select an option..."
     icon="i-heroicons-magnifying-glass-20-solid"
@@ -27,18 +37,16 @@
 
   <!-- 2) Purpose -->
   <label><b>Purpose of the Explanations</b></label>
+  <InfoIcon>
+                      Field type, e.g., number, string, Boolean, data, image,
+                      audio.
+                    </InfoIcon>
   <USelect
     placeholder="Select an option..."
     icon="i-heroicons-magnifying-glass-20-solid"
     v-model="purpose"
     :options="purpose_list"
   />
-
-<!-- Table-->
-          <div v-for="(field, fieldIndex) in dataItem.fields" :key="fieldIndex">
-            <h3 class="no-margin-sub-header">
-              Data Schema  {{ dataItemIndex + 1 }} - {{ fieldIndex + 1 }}
-            </h3>
 
             <div>
               <div class="inline-input-left">

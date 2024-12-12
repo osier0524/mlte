@@ -3,9 +3,8 @@
     <br />
     <!-- API call -->
     <div class="chatgptcall">
-      <p><b>What's Training Latency?</b> </p>
       <p>
-        Training latency refers to the time taken for a trained model to process an input and generate a prediction. 
+        Also known as learning time, refers to the time taken for a model to process training data.
         <span class="AIgeneratedtext">{{ response }} </span>
       </p>
     </div>
@@ -14,8 +13,8 @@
     <p><b>Create a Quality Scenario</b></p>
     <br/>
 <div>  
-  <!-- 1 Inference Option -->
-  <label><b>Inference Option</b></label>
+  <!-- 1  Option -->
+  <label><b>Training Location</b></label>
   <div class="info-container">
     <span class="info-icon">i</span>
     <div class="tooltip">API call for project-specific definition</div>
@@ -28,13 +27,12 @@
     icon="i-heroicons-magnifying-glass-20-solid"
     v-model="deploymentInfrastructure"
     @change="handleSelection"
-    style="width: 300px;"
   />
 
   <!-- Conditionally show input field for 'Other' -->
   <br />
   <div v-if="showOtherInput">
-    <label for="otherInput"><b>*Specify Your Choice</b> </label>
+    <label for="otherInput"><b>*Specify Training Location</b> </label>
     <UInput v-model="OtherInferenceOption" placeholder="Specify your training option" style="width: 300px;" />
   </div>
 
@@ -42,7 +40,7 @@
 
   <div>
     <!-- Deployment Infrastructure -->
-    <label><b>Deployment Infrastructure</b></label>
+    <label><b> Training/Learning Method</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
@@ -55,21 +53,32 @@
       icon="i-heroicons-magnifying-glass-20-solid"
       v-model="infrastructureDetails"
       @change="handleSelectionDeployment"
-      style="width: 300px;" 
+     
     />
     <br /> 
 
     <!-- Conditionally show input field for Other -->
     <div v-if="showOtherInputDeployment">
-      <label for="otherInput"><b>*Specify Other Deployment Infrastructure</b></label>
+      <label for="otherInput"><b>*Specify Other Training Method</b></label>
       <UInput v-model="OtherDeploymentOption" placeholder="Specify your deployment infrastructure" style="width: 300px;" />
     </div>
   </div>
-
-  <br/>
+      
+  <label><b>Expected training Latency (Big O Notation)</b></label>
+    <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div>
+    <div style="display: flex; align-items: center;"> 
+      <p style="margin-left:8px; margin-bottom:0;">O</p>
+      <p style="margin-left:8px; margin-bottom:0;">(</p>
+    <UInput v-model="PercentageLatency" style="width: 50px;"/>
+    <p style="margin-left:8px; margin-bottom:0;">)</p>
+    </div>
+    <br />
 
     <!-- Inference Latency Metrics -->
-    <label><b>Average Expected Latency in Seconds</b></label>
+    <label><b>Epochs</b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
@@ -79,40 +88,17 @@
     v-model="averageLatency" 
     style="width: 50px;" 
      />
-     <p style="margin-left:8px; margin-bottom:0;">seconds</p>
      </div>
     <br />
 
 
-    
-    <label><b>Percentage of Requests to Meet Target</b></label>
-    <div class="info-container">
-      <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div>
-    <div style="display: flex; align-items: center;"> 
-    <UInput v-model="PercentageLatency" style="width: 50px;"  />
-    <p style="margin-left:8px; margin-bottom:0;">%</p>
-    </div>
-    <br />
 
-    <label><b>Latency in Seconds</b></label>
-    <div class="info-container">
-      <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div>
 
-    <div style="display: flex; align-items: center;"> 
-    <UInput 
-    v-model="latencySeconds" 
-    style="width: 50px;"  />
-    <p style="margin-left:8px; margin-bottom:0;">seconds</p>
-  </div>
-    <br />
+
 
       <!-- Dynamic Sentence -->
       <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
-  <b>Scenario for Inference Latency:</b> Model's inference is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
+  <b>Scenario for Training Latency:</b> Model's training option is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
 </p>
 <br/>
 <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics" :style="{color: 'black'}" ><b>Do these metrics make sense?</b></UButton>
@@ -173,16 +159,17 @@ export default {
       showOtherInput: false, // To control the visibility of the input field
       showOtherInputDeployment: false,
       secondoptions: [
-        'Cloud (enables scalable, remote access to computational resources and storage for inference)', 
-        'On-premise (model runs on local, in-house servers, offering full control over the environment but requiring in-house maintenance)', 
-        'Edge (allows real-time predictions and low-latency while minimizing the need for data transmission to centralized servers)', 
+        'Supervised (uses labeled data to train algorithms to recognize patterns and predict outcomes)', 
+        'Unsupervised (analyzes data without human intervention to find patterns and groupings)', 
+        'Reinforcement', 
         'TBD', 
         'Other'
       ],
 
       options: [
-        'Batch Inference (the model makes predictions on a bunch of common unlabeled examples and then caches those prediction)',
-        'Streaming Inference (model only makes predictions on demand)',
+        'Cloud Platforms (AWS, Google Cloud AI, etc.)',
+        'HPC Clusters',
+        'Locally',
         'TBD',
         'Other',
         ],
@@ -303,7 +290,8 @@ export default {
           },
           {
             role: 'user',
-            content: `Write one sentence to explain the potential consequences of not considering inference latency in the context of ${props.MLTask} and ${props.usageContext}. Use simple language that data scientists would understand`,
+            content: `Write one sentence to explain the potential consequences of not considering training latency in the context of ${props.MLTask} and ${props.usageContext}. Use simple language that data scientists would understand.
+            Provide a realistic consequences`,
           },
         ];
 
