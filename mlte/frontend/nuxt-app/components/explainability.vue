@@ -48,79 +48,21 @@
     :options="purpose_list"
   />
 
-            <div>
-              <div class="inline-input-left">
-                <UsaTextInput v-model="field.name">
-                  <template #label>
-                    Field Name
-                    <InfoIcon> Field name. </InfoIcon>
-                  </template>
-                </UsaTextInput>
-              </div>
+  <br/>
+  <label><b>Explainability Expectations</b></label>
 
-              <div class="inline-input-right">
-                <UsaTextInput v-model="field.description">
-                  <template #label>
-                    Field Description
-                    <InfoIcon> Short field description. </InfoIcon>
-                  </template>
-                </UsaTextInput>
-              </div>
-            </div>
+  <UInput v-model="language_expectations" />
 
-            <div>
-              <div class="inline-input-left">
-                <UsaTextInput v-model="field.type">
-                  <template #label>
-                    Field Type
-                    <InfoIcon>
-                      Field type, e.g., number, string, Boolean, data, image,
-                      audio.
-                    </InfoIcon>
-                  </template>
-                </UsaTextInput>
-              </div>
+  <br/>
+  <label><b>Test Plan</b></label>
 
-              <div class="inline-input-right">
-                <UsaTextInput v-model="field.expected_values">
-                  <template #label>
-                    Expected Values
-                    <InfoIcon>
-                      Expected values for field, e.g., any, range, enumeration.
-                    </InfoIcon>
-                  </template>
-                </UsaTextInput>
-              </div>
-            </div>
+  <UInput v-model="test_plan" />
 
-            <div>
-              <div class="inline-input-left">
-                <UsaTextInput v-model="field.missing_values">
-                  <template #label>
-                    Handling Missing Values
-                    <InfoIcon>
-                      How to interpret missing values, e.g., null, empty string.
-                    </InfoIcon>
-                  </template>
-                </UsaTextInput>
-              </div>
-
-              <div class="inline-input-right">
-                <UsaTextInput v-model="field.special_values">
-                  <template #label>
-                    Handling Special Values
-                    <InfoIcon>
-                      How to interpret special values, e.g., 999, N/A.
-                    </InfoIcon>
-                  </template>
-                </UsaTextInput>
-              </div>
-            </div>
-            <DeleteButton
+                 <DeleteButton
               class="margin-button"
               @click="deleteField(dataItemIndex, fieldIndex)"
             >
-              Delete Field
+              Delete Stakeholder
             </DeleteButton>
             <hr />
           </div>
@@ -129,6 +71,7 @@
             Add Stakeholder
           </AddButton>
         
+
 
 
 </template>

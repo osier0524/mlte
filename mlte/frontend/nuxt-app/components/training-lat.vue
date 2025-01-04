@@ -8,13 +8,15 @@
         <span class="AIgeneratedtext">{{ response }} </span>
       </p>
     </div>
-    <br />
+
     <!-- <p> <b>What does that mean for your project?</b></p> -->
-    <p><b>Create a Quality Scenario</b></p>
+     <br/>
+    <p><b>Background Questions </b></p>
     <br/>
 <div>  
   <!-- 1  Option -->
-  <label><b>Training Location</b></label>
+  <label><b>Select the retraining method you will use for your model</b></label>
+
   <div class="info-container">
     <span class="info-icon">i</span>
     <div class="tooltip">API call for project-specific definition</div>
@@ -23,24 +25,32 @@
   <!-- USelect Component -->
   <USelect
     placeholder="Select an option..."
-    :options="options"
+    :options="retrainingmethodslist"
     icon="i-heroicons-magnifying-glass-20-solid"
-    v-model="deploymentInfrastructure"
+    v-model="retrainingMethod"
     @change="handleSelection"
   />
 
   <!-- Conditionally show input field for 'Other' -->
-  <br />
+  
   <div v-if="showOtherInput">
     <label for="otherInput"><b>*Specify Training Location</b> </label>
-    <UInput v-model="OtherInferenceOption" placeholder="Specify your training option" style="width: 300px;" />
+    <UInput v-model="OtherRetrainingOption" placeholder="Specify your training option" style="width: 300px;" />
   </div>
 
   <br/>
 
+  <label><b> Source of the data for retraining </b></label>
+    <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div>
+    <UInput v-model="DataSource" />
+    <br/>
+
   <div>
     <!-- Deployment Infrastructure -->
-    <label><b> Training/Learning Method</b></label>
+    <label><b> Frequency of Retraining </b></label>
     <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
@@ -55,50 +65,50 @@
       @change="handleSelectionDeployment"
      
     />
-    <br /> 
 
     <!-- Conditionally show input field for Other -->
     <div v-if="showOtherInputDeployment">
       <label for="otherInput"><b>*Specify Other Training Method</b></label>
       <UInput v-model="OtherDeploymentOption" placeholder="Specify your deployment infrastructure" style="width: 300px;" />
     </div>
+    <br/>
   </div>
-      
-  <label><b>Expected training Latency (Big O Notation)</b></label>
-    <div class="info-container">
-      <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
-    </div>
-    <div style="display: flex; align-items: center;"> 
-      <p style="margin-left:8px; margin-bottom:0;">O</p>
-      <p style="margin-left:8px; margin-bottom:0;">(</p>
-    <UInput v-model="PercentageLatency" style="width: 50px;"/>
-    <p style="margin-left:8px; margin-bottom:0;">)</p>
-    </div>
-    <br />
+  
+ 
 
-    <!-- Inference Latency Metrics -->
-    <label><b>Epochs</b></label>
+  <p><b>Requirement</b></p>
+    <br/>
+
+
+    <!-- -->
+
+    <label><b>Expected Retraining Latency</b></label>
+
     <div class="info-container">
       <span class="info-icon">i</span>
-      <div class="tooltip">API call for project-specific definition</div>
+      <div class="tooltip">{{ExpectedLatencyResponse}}</div>
     </div>
+
     <div style="display: flex; align-items: center;"> 
     <UInput 
-    v-model="averageLatency" 
+    v-model="ExpectedLatency" 
     style="width: 50px;" 
      />
+     <p style="margin-left:8px; margin-bottom:0;">
+
+    <USelect
+          placeholder="unit"
+          variant="outline"
+          :options="['secs', 'mins', 'hours']"
+           v-model="unit_averagelatency"
+      />
+      </p>
      </div>
     <br />
 
-
-
-
-
-
       <!-- Dynamic Sentence -->
       <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
-  <b>Scenario for Training Latency:</b> Model's training option is [{{ firstWordOfDeploymentInfrastructure }}], with an average latency of [{{ averageLatency }}]. [{{ PercentageLatency }} ]% of requests will have a maximum latency of [{{ latencySeconds }}] seconds. The model's deployment infrastructure is [{{firstWordOfinfrastructureDetails }}].
+  <b>Scenario for Training Latency:</b> The model's retraining latency is expected to be [{{ ExpectedLatency }}] {{unit_averagelatency}} using [{{ retrainingMethod }}]. The source of the retraining data is from [{{ DataSource }}].
 </p>
 <br/>
 <UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics" :style="{color: 'black'}" ><b>Do these metrics make sense?</b></UButton>
@@ -154,22 +164,23 @@ export default {
       showOtherOption: false,
       OtherDeploymentOption: '',
       infrastructureDetails: '', 
-      deploymentInfrastructure: '', // v-model for the select field
-      otherInputValue: '', // v-model for the other input field
-      showOtherInput: false, // To control the visibility of the input field
+      retrainingMethod: '', 
+      otherInputValue: '', 
+      showOtherInput: false, 
       showOtherInputDeployment: false,
       secondoptions: [
-        'Supervised (uses labeled data to train algorithms to recognize patterns and predict outcomes)', 
-        'Unsupervised (analyzes data without human intervention to find patterns and groupings)', 
-        'Reinforcement', 
+        'Real-time (as new data arrives)', 
+        'Trigger-based',
+        'Daily', 
+        'Weekly', 
+        'Monthly',
         'TBD', 
         'Other'
       ],
 
-      options: [
-        'Cloud Platforms (AWS, Google Cloud AI, etc.)',
-        'HPC Clusters',
-        'Locally',
+      retrainingmethodslist: [
+        'Incremental learning',
+        'Batch learning',
         'TBD',
         'Other',
         ],
@@ -184,7 +195,8 @@ export default {
     },
     handleSelection() {
       // Show the input field if "Other" is selected
-      this.showOtherInput = this.deploymentInfrastructure === 'Other';
+      this.showOtherInput = this.retrainingMethod
+ === 'Other';
     },
 
     handleSelectionDeployment(){
@@ -208,9 +220,13 @@ export default {
   setup(props) {
     const response = ref('');
     const secondResponse = ref('');
-    const deploymentInfrastructure = ref<string | null>(null);
+    const retrainingMethod = ref<string | null>(null);
+    const ExpectedLatencyResponse = ref<string | null>(null);
+    const DataSource = ref<string | null>(null);
+    const unit_averagelatency = ref<string | null>(null);
+    const OtherRetrainingOption = ref<string | null>(null);
     const infrastructureDetails = ref<string | null>(null);
-    const averageLatency = ref<string | null>(null);
+    const ExpectedLatency = ref<string | null>(null);
     const PercentageLatency = ref<string | null>(null);
     const latencySeconds = ref<string | null>(null);
 
@@ -220,9 +236,10 @@ export default {
     // Computed property to check if the form is complete
     const isFormComplete = computed(() => {
         return (
-            deploymentInfrastructure.value &&
+            retrainingMethod
+      .value &&
             infrastructureDetails.value &&
-            averageLatency.value &&
+            ExpectedLatency.value &&
             PercentageLatency.value &&
             latencySeconds.value
         );
@@ -231,39 +248,30 @@ export default {
     const saveForm = () => {
         // Here you can save the data. This is a simple example.
         const formData = {
-            deploymentInfrastructure: deploymentInfrastructure.value,
+            retrainingMethod
+      : retrainingMethod
+      .value,
             infrastructureDetails: infrastructureDetails.value,
-            averageLatency: averageLatency.value,
+            ExpectedLatency: ExpectedLatency.value,
             PercentageLatency: PercentageLatency.value,
             latencySeconds: latencySeconds.value,
         };
          // Save to local storage
         localStorage.setItem('formData', JSON.stringify(formData));
         // Simulate saving the data (e.g., make an API call)
-        // You can replace this with actual API call logic
+      
         console.log("Saving form data:", formData);
         
-        // Set a success message
         saveStatusMessage.value = "Form saved successfully";
 
 
     };
 
-    // UTILITY FUNCTIONS
-  //   const splitByDash = (text) => {
-  //   return text
-  //     .split('-')
-  //     .map(item => `- ${item.trim()}`) // Keep the "-" character and trim spaces
-  //     .filter(Boolean);
-
-
-  // };
-
-  // COMPUTED PROPERTIES
-    //  first word of deploymentInfrastructure and detailsa
     const firstWordOfDeploymentInfrastructure = computed(() => {
-      if (deploymentInfrastructure.value) {
-        return deploymentInfrastructure.value.split(' ')[0]; 
+      if (retrainingMethod
+.value) {
+        return retrainingMethod
+  .value.split(' ')[0]; 
       }
       return '';
     });
@@ -277,7 +285,7 @@ export default {
 
     // OPEN AI API INTEGRATION
 
-    // FIRST CALL
+    // Consequence call 
     const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science. Offer thoughful criticism.';
 
     const getChatResponse = async () => {
@@ -290,8 +298,8 @@ export default {
           },
           {
             role: 'user',
-            content: `Write one sentence to explain the potential consequences of not considering training latency in the context of ${props.MLTask} and ${props.usageContext}. Use simple language that data scientists would understand.
-            Provide a realistic consequences`,
+            content: `Write one sentence to explain the potential consequences of not considering training latency in the context of ${props.MLTask} and ${props.usageContext}. Use language that data scientists would understand.
+            Provide a realistic consequences and focus on retraining latency.`,
           },
         ];
 
@@ -304,7 +312,7 @@ export default {
     };
 
 
-    // Second API call on button click
+    // Evaluation button 
     const checkMetrics = async () => {
     const { chat } = openai();
     try {
@@ -316,17 +324,16 @@ export default {
             {
                 role: 'user',
                 content: `Please review the following latency metrics for ${props.MLTask}:
-                - Average Latency: ${averageLatency.value} seconds
+                - Average Latency: ${ExpectedLatency.value} seconds
                 - Percentage of Requests to Meet Target: ${PercentageLatency.value}% requests should meet this latency
                 - Latency in Seconds: ${latencySeconds.value} seconds
-                - The Inference option for this project is ${deploymentInfrastructure.value}
+                - The Inference option for this project is ${retrainingMethod
+          .value}
                 - The deployment infrastructure for this project is ${infrastructureDetails.value}
 
 
                 Do these metrics seem reasonable for this project? Please respond with three brief bullet points:
-                - [check mark or caution emoji] Average Latency: 
-                - [check mark or caution emoji] Percentage of Requests to Meet Target: 
-                - [check mark or caution emoji] Latency in Seconds: 
+                - [check mark or caution emoji] Maximum Expected retraining latency: 
                 if the answer is reasonable, then provide a green check mark emoji. If the answer is not reasonable or changes are suggested, provide a waning emoji in the [emoji] space.
     
                 Consider that data scientists may have the following misconceptions: 
@@ -334,10 +341,8 @@ export default {
                 such as data preprocessing, feature extraction, or system integration.
                 - Data scientists might not understand how high inference latency affects user experience which can lead to dissatisfaction and reduced user engagement
                 - Data scientists might not be aware of the impact of model size on latency, where larger models typically require more processing time.
-
-
                 `
-                
+    
                 ,
             },
         ];
@@ -371,9 +376,11 @@ function formatSecondResponse(text) {
         const storedData = localStorage.getItem('formData');
         if (storedData) {
         const formData = JSON.parse(storedData);
-        deploymentInfrastructure.value = formData.deploymentInfrastructure;
+        retrainingMethod
+  .value = formData.retrainingMethod
+  ;
         infrastructureDetails.value = formData.infrastructureDetails;
-        averageLatency.value = formData.averageLatency;
+        ExpectedLatency.value = formData.ExpectedLatency;
         PercentageLatency.value = formData.PercentageLatency;
         latencySeconds.value = formData.latencySeconds;
     }
@@ -382,9 +389,12 @@ function formatSecondResponse(text) {
     return {
       response,
       secondResponse,
-      deploymentInfrastructure,
+      retrainingMethod,
+      DataSource,
+      ExpectedLatencyResponse,
+      OtherRetrainingOption,
       infrastructureDetails,
-      averageLatency,
+      ExpectedLatency,
       PercentageLatency,
       latencySeconds,
       firstWordOfDeploymentInfrastructure, 
@@ -456,12 +466,12 @@ function formatSecondResponse(text) {
   margin-bottom: 10px; 
 }
 .highlighted-bullet {
-  background-color: #f0f8ff; /* Light blue background */
-  padding: 10px;             /* Adds padding for better spacing */
-  border-radius: 5px;        /* Rounded corners */
-  margin-bottom: 10px;       /* Space between bullet points */
-  font-weight: bold;         /* Makes the text bold */
-  color: #333;               /* Text color for readability */
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+  background-color: #f0f8ff; 
+  padding: 10px;           
+  border-radius: 5px;        
+  margin-bottom: 10px;      
+  font-weight: bold;       
+  color: #333;             
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
 }
 </style>

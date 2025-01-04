@@ -10,7 +10,6 @@
       </p>
     </div>
     <br />
-    <!-- <p> <b>What does that mean for your project?</b></p> -->
 
     
    <p><b>Create a Quality Scenario</b></p>
@@ -75,17 +74,16 @@
    
   </div>
 
-  <!-- <br/> -->
 
-  <!-- <p><b>Specific Requirements</b></p> -->
-    <!-- <br/> -->
 
     <!-- Inference Latency Metrics -->
     <label><b>Average Expected Latency</b></label>
+
     <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">{{ExpectedLatencyResponse}}</div>
     </div>
+
     <div style="display: flex; align-items: center;"> 
     <UInput 
     v-model="averageLatency" 
@@ -93,7 +91,7 @@
      />
      <p style="margin-left:8px; margin-bottom:0;">
 
-      <USelect
+    <USelect
           placeholder="unit"
           variant="outline"
           :options="['seconds (sec)', 'milliseconds (ms)', 'microseconds (µs)']"
@@ -198,9 +196,9 @@ export default {
       showOtherOption: false,
       OtherDeploymentOption: '',
       infrastructureDetails: '', 
-      deploymentInfrastructure: '', // v-model for the select field
-      otherInputValue: '', // v-model for the other input field
-      showOtherInput: false, // To control the visibility of the input field
+      deploymentInfrastructure: '', 
+      otherInputValue: '', 
+      showOtherInput: false, 
       showOtherInputDeployment: false,
       secondoptions: [
         'Cloud (enables scalable, remote access to computational resources and storage for inference)', 
@@ -268,7 +266,6 @@ export default {
     // New state for save status
     const saveStatusMessage = ref('');
 
-    // Computed property to check if the form is complete
     const isFormComplete = computed(() => {
         return (
             deploymentInfrastructure.value &&
@@ -287,30 +284,13 @@ export default {
             PercentageLatency: PercentageLatency.value,
             latencySeconds: latencySeconds.value,
         };
-         // Save to local storage
         localStorage.setItem('formData', JSON.stringify(formData));
-        // Simulate saving the data (e.g., make an API call)
-        // You can replace this with actual API call logic
+     
         console.log("Saving form data:", formData);
-        
-        // Set a success message
         saveStatusMessage.value = "Form saved successfully";
 
 
     };
-
-    // UTILITY FUNCTIONS
-  //   const splitByDash = (text) => {
-  //   return text
-  //     .split('-')
-  //     .map(item => `- ${item.trim()}`) // Keep the "-" character and trim spaces
-  //     .filter(Boolean);
-
-
-  // };
-
-  // COMPUTED PROPERTIES
-    //  first word of deploymentInfrastructure and detailsa
     const firstWordOfDeploymentInfrastructure = computed(() => {
       if (deploymentInfrastructure.value) {
         return deploymentInfrastructure.value.split(' ')[0]; 
@@ -327,7 +307,7 @@ export default {
 
     // OPEN AI API INTEGRATION
 
-    // FIRST CALL
+    // consequence
     const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science. Offer thoughful criticism.';
 
     const getChatResponse = async () => {
@@ -353,7 +333,7 @@ export default {
     };
 
 
-    // Second API call on button click
+    // evaluation
     const checkMetrics = async () => {
     const { chat } = openai();
     try {
@@ -389,13 +369,8 @@ export default {
 
 // Function to format the second API response
 function formatSecondResponse(text) {
-    // Split the response into lines and filter out empty lines
     const lines = text.split('\n').filter(line => line.trim() !== '');
-    
-    // Map lines to create a bullet point list and return only the first three items
     const bullets = lines.slice(0, 3).map(line => line.trim());
-    
-    // Return the formatted output
     return bullets;
 }
 
@@ -554,10 +529,6 @@ const InfoIconLatency = async () => {
        console.error('Error fetching InfoIconExpectedLatency response:', error);
    }
 };
-
-
-
-
 
     // HOOK
     onMounted(() => {
