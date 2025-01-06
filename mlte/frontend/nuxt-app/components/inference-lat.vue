@@ -370,7 +370,9 @@ export default {
 // Function to format the second API response
 function formatSecondResponse(text) {
     const lines = text.split('\n').filter(line => line.trim() !== '');
+    
     const bullets = lines.slice(0, 3).map(line => line.trim());
+    
     return bullets;
 }
 

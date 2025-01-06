@@ -16,11 +16,11 @@
 <div>  
   <!-- 1  Option -->
   <label><b>Select the retraining method you will use for your model</b></label>
-
+<!-- 
   <div class="info-container">
     <span class="info-icon">i</span>
     <div class="tooltip">API call for project-specific definition</div>
-  </div>
+  </div> -->
 
   <!-- USelect Component -->
   <USelect
@@ -41,27 +41,26 @@
   <br/>
 
   <label><b> Source of the data for retraining </b></label>
-    <div class="info-container">
+    <!-- <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
-    </div>
+    </div> -->
     <UInput v-model="DataSource" />
     <br/>
 
   <div>
     <!-- Deployment Infrastructure -->
     <label><b> Frequency of Retraining </b></label>
-    <div class="info-container">
+    <!-- <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">API call for project-specific definition</div>
-    </div>
+    </div> -->
 
-    <!-- Deployment Infrastructure Selection -->
     <USelect
       placeholder="Select an option..."
       :options="secondoptions"
       icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="infrastructureDetails"
+      v-model="frequencyRetrain"
       @change="handleSelectionDeployment"
      
     />
@@ -84,10 +83,10 @@
 
     <label><b>Expected Retraining Latency</b></label>
 
-    <div class="info-container">
+    <!-- <div class="info-container">
       <span class="info-icon">i</span>
       <div class="tooltip">{{ExpectedLatencyResponse}}</div>
-    </div>
+    </div> -->
 
     <div style="display: flex; align-items: center;"> 
     <UInput 
@@ -163,7 +162,7 @@ export default {
       otherOptionValue: '',
       showOtherOption: false,
       OtherDeploymentOption: '',
-      infrastructureDetails: '', 
+      frequencyRetrain: '', 
       retrainingMethod: '', 
       otherInputValue: '', 
       showOtherInput: false, 
@@ -200,7 +199,7 @@ export default {
     },
 
     handleSelectionDeployment(){
-      this.showOtherInputDeployment = this.infrastructureDetails === 'Other';
+      this.showOtherInputDeployment = this.frequencyRetrain === 'Other';
     }
 
   },
@@ -225,7 +224,7 @@ export default {
     const DataSource = ref<string | null>(null);
     const unit_averagelatency = ref<string | null>(null);
     const OtherRetrainingOption = ref<string | null>(null);
-    const infrastructureDetails = ref<string | null>(null);
+    const frequencyRetrain = ref<string | null>(null);
     const ExpectedLatency = ref<string | null>(null);
     const PercentageLatency = ref<string | null>(null);
     const latencySeconds = ref<string | null>(null);
@@ -238,7 +237,7 @@ export default {
         return (
             retrainingMethod
       .value &&
-            infrastructureDetails.value &&
+            frequencyRetrain.value &&
             ExpectedLatency.value &&
             PercentageLatency.value &&
             latencySeconds.value
@@ -251,14 +250,12 @@ export default {
             retrainingMethod
       : retrainingMethod
       .value,
-            infrastructureDetails: infrastructureDetails.value,
+            frequencyRetrain: frequencyRetrain.value,
             ExpectedLatency: ExpectedLatency.value,
             PercentageLatency: PercentageLatency.value,
             latencySeconds: latencySeconds.value,
         };
-         // Save to local storage
-        localStorage.setItem('formData', JSON.stringify(formData));
-        // Simulate saving the data (e.g., make an API call)
+       localStorage.setItem('formData', JSON.stringify(formData));
       
         console.log("Saving form data:", formData);
         
@@ -268,17 +265,15 @@ export default {
     };
 
     const firstWordOfDeploymentInfrastructure = computed(() => {
-      if (retrainingMethod
-.value) {
-        return retrainingMethod
-  .value.split(' ')[0]; 
+      if (retrainingMethod.value) {
+        return retrainingMethod.value.split(' ')[0]; 
       }
       return '';
     });
 
-    const firstWordOfinfrastructureDetails = computed(() => {
-      if (infrastructureDetails.value) {
-        return infrastructureDetails.value.split(' ')[0]; 
+    const firstWordOffrequencyRetrain = computed(() => {
+      if (frequencyRetrain.value) {
+        return frequencyRetrain.value.split(' ')[0]; 
       }
       return '';
     });
@@ -324,23 +319,15 @@ export default {
             {
                 role: 'user',
                 content: `Please review the following latency metrics for ${props.MLTask}:
-                - Average Latency: ${ExpectedLatency.value} seconds
-                - Percentage of Requests to Meet Target: ${PercentageLatency.value}% requests should meet this latency
-                - Latency in Seconds: ${latencySeconds.value} seconds
-                - The Inference option for this project is ${retrainingMethod
-          .value}
-                - The deployment infrastructure for this project is ${infrastructureDetails.value}
+              
+                - Expected Latency: ${ExpectedLatency.value} ${unit_averagelatency.value}
+                - The retraining method that will be used for retraing is ${retrainingMethod.value}
+                - The data that will be used for retraining is ${DataSource.value}
+                - The retraining frequency is ${frequencyRetrain.value}
+                
+                Does this metric seem reasonable for this project? Provide a brief response with targeted language for data scientists 
 
 
-                Do these metrics seem reasonable for this project? Please respond with three brief bullet points:
-                - [check mark or caution emoji] Maximum Expected retraining latency: 
-                if the answer is reasonable, then provide a green check mark emoji. If the answer is not reasonable or changes are suggested, provide a waning emoji in the [emoji] space.
-    
-                Consider that data scientists may have the following misconceptions: 
-                - Data scientists might focus only on optimizing the model to reduce latency, overlooking other sources of high latency 
-                such as data preprocessing, feature extraction, or system integration.
-                - Data scientists might not understand how high inference latency affects user experience which can lead to dissatisfaction and reduced user engagement
-                - Data scientists might not be aware of the impact of model size on latency, where larger models typically require more processing time.
                 `
     
                 ,
@@ -356,15 +343,11 @@ export default {
     }
 };
 
-// Function to format the second API response
 function formatSecondResponse(text) {
-    // Split the response into lines and filter out empty lines
     const lines = text.split('\n').filter(line => line.trim() !== '');
     
-    // Map lines to create a bullet point list and return only the first three items
     const bullets = lines.slice(0, 3).map(line => line.trim());
     
-    // Return the formatted output
     return bullets;
 }
 
@@ -372,14 +355,13 @@ function formatSecondResponse(text) {
     // HOOK
     onMounted(() => {
       getChatResponse(); // initial call 
-        // Load data from local storage
         const storedData = localStorage.getItem('formData');
         if (storedData) {
         const formData = JSON.parse(storedData);
         retrainingMethod
   .value = formData.retrainingMethod
   ;
-        infrastructureDetails.value = formData.infrastructureDetails;
+        frequencyRetrain.value = formData.frequencyRetrain;
         ExpectedLatency.value = formData.ExpectedLatency;
         PercentageLatency.value = formData.PercentageLatency;
         latencySeconds.value = formData.latencySeconds;
@@ -390,15 +372,16 @@ function formatSecondResponse(text) {
       response,
       secondResponse,
       retrainingMethod,
+      unit_averagelatency,
       DataSource,
       ExpectedLatencyResponse,
       OtherRetrainingOption,
-      infrastructureDetails,
+      frequencyRetrain,
       ExpectedLatency,
       PercentageLatency,
       latencySeconds,
       firstWordOfDeploymentInfrastructure, 
-      firstWordOfinfrastructureDetails,
+      firstWordOffrequencyRetrain,
       checkMetrics,
       //splitByDash,
       saveStatusMessage,   
