@@ -168,6 +168,8 @@
         </InfoIcon>
       </template>
     </UsaSelect>
+    
+  
 
     <UsaTextInput v-model="form.system.task">
       <template #label>
@@ -816,11 +818,19 @@
       </template>
     </Accordion>
 
- 
+    
 
     <Accordion title="Explainability">
       <template #content>
-        <Explainability></Explainability>
+        <Explainability MLTask={{ form.system.task }} :usageContext="form.system.usage_context"/> 
+      </template>
+    </Accordion>
+
+    <Accordion title="Training Latency">
+      <template #content>
+        <!-- TODO: pull data from these fields if it is modified while filling out the form-->
+         <!-- TODO: Make those fields mandatory in the form -->
+        <TrainingLat MLTask={{ form.system.task }} :usageContext="form.system.usage_context" />
       </template>
     </Accordion>
 
