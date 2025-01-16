@@ -71,24 +71,28 @@
   <label><b>Language Level</b></label>
   <div class="info-container">
   <span class="info-icon">e</span>
-  <div class="tooltip">{{ Q4_response }}</div>
+  <div class="tooltip"> {{ Q4_response }}</div>
   </div>
 
   <UInput v-model="language_expectations" />
 
   <br/>
   <label><b>Test Plan</b></label>
+    <div class="info-container">
   <span class="info-icon">e</span>
-            <div class="tooltip"> Select the person or party for whom you are writing the requirement..</div>
+  <div class="tooltip"> {{ Q5_response }}</div>
+  </div>
           
-
   <UInput v-model="test_plan" />
   <br/>
 
    <!-- Dynamic Sentence -->
    <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
-  <b>Scenario for Training Latency:</b> The model's retraining latency is expected to be [{{ ExpectedLatency }}] {{unit_averagelatency}} using [{{ retrainingMethod }}]. The source of the retraining data is from [{{ DataSource }}].
-</p>
+
+  <b>Scenario for Explainability: </b>For the stakeholder [{{ selectedStakeholderLabel }}], the purposes for explainability are [{{ selectedPurposeLabels }}]. 
+    The model needs to have a [{{ typeofExplanation }}]. The explanations should be delivered at a language level targeted for [{{ language_expectations }}]. 
+    The test plan to fulfill explainability expectations are [{{ test_plan }}].
+  </p>
 <br/>
 
 
@@ -121,17 +125,37 @@ export default {
     const response = ref('');
     const Q3_response = ref('');
     const Q4_response = ref('');
+    const Q5_response = ref('');
     const stakeholder = ref('');
+    
     const stakeholder_list = ref([]);
     const purpose = ref([]);
     const purpose_list = ref([]);
     const typeofExplanation = ref([]);
     const OtherStakeholder = ref('');
     const showOtherInput = ref(false);
+    const language_expectations = ref('');
+    const test_plan = ref('');
 
     const handleSelection = () => {
       showOtherInput.value = stakeholder.value === 'stakeholder_other';
     };
+
+    // get the value of the stakeholder selected 
+
+    const selectedStakeholderLabel = computed(() => {
+      const selected = stakeholder_list.value.find(
+        (option) => option.value === stakeholder.value
+      );
+      return selected ? selected.label : stakeholder.value;
+    });
+
+    // extract the val of the purposes selected:
+    const selectedPurposeLabels = computed(() => {
+      return purpose.value.map((selectedPurpose) => selectedPurpose.label).join(', ');
+      });
+
+
 
     watch(stakeholder, handleSelection);
 
@@ -229,6 +253,9 @@ export default {
         console.error('Error fetching chat response for stakeholders:', error);
       }
     };
+
+
+
   // Fetch purposes dynamically based on stakeholder
   const GetPurpose = async (selectedStakeholder) => {
       const { chat } = openai();
@@ -298,7 +325,6 @@ export default {
 
         Briefly justify your suggestion by explaining why this explanation type is most relevant or valuable for this specific stakeholder in the given context. 
         You can suggest more than one option.
-
      
 `,
           },
@@ -314,59 +340,100 @@ export default {
 
     // Example Info icon: language level question. 
 
-    const Q4 = async (selectedStakeholder) => {
-      const { chat } = openai();
-      try {
-        const messages = [
-          {
-            role: 'system',
-            content: 'You are a product manager with experience in managing AI products.',
-          },
-          {
-            role: 'user',
-            content: `
-            
-            Provide an example of the language level requirement that a data scientist should consider when meeting 
-            the explainability expectations for ${selectedStakeholder.value} who has the following purposes for exaplainability: ${purpose} and 
-            the type of explanations for a ${props.MLTask} is ${typeofExplanation}.
-     
-`,
-          },
-        ];
+    const Q4 = async () => {
+  const { chat } = openai();
+  try {
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are a product manager with experience in managing AI products.',
+      },
+      {
+        role: 'user',
+        content: `
+          Provide an example of the language level requirement that a data scientist should consider when meeting 
+          the explainability expectations for ${selectedStakeholderLabel.value} who has the following purposes for explainability: ${purpose.value} and 
+          the type of explanations for a ${props.MLTask} is ${typeofExplanation.value}.
+        `,
+      },
+    ];
 
-        const chatResponse = await chat(messages, 'gpt-3.5-turbo');
-        Q4_response.value = chatResponse.split('\n\n')[0];
-        
-      } catch (error) {
-        console.error('Error fetching chat response for stakeholders:', error);
-      }
-    };
+    const chatResponse = await chat(messages, 'gpt-3.5-turbo');
+    Q4_response.value = chatResponse.split('\n\n')[0];
+  } catch (error) {
+    console.error('Error fetching chat response for stakeholders:', error);
+  }
+};
 
-    watch([stakeholder, purpose, typeofExplanation], ([newStakeholder, newPurpose, newTypeofExplanation]) => {
-    if (newStakeholder && newPurpose.length > 0 && newTypeofExplanation.length > 0) {
-      Q4();
-    }
-  });
+
+
+watch([stakeholder, purpose, typeofExplanation], ([newStakeholder, newPurpose, newTypeofExplanation]) => {
+  if (newStakeholder && newPurpose.length > 0 && newTypeofExplanation.length > 0) {
+    Q4(); 
+  }
+}, { deep: true });
+
+
+
+// example info icon for test plan question:
+const Q5 = async () => {
+  console.log("Q5 is called");
+  const { chat } = openai();
+  try {
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are a product manager with experience in managing AI products.',
+      },
+      {
+        role: 'user',
+        content: `
+          Provide an example of a test that a data scientist should consider when meeting 
+          the explainability expectations for a person.
+        `,
+      },
+    ];
+
+    const chatResponse = await chat(messages, 'gpt-3.5-turbo');
+    console.log("Q5 chatResponse:", chatResponse);
+    Q5_response.value = chatResponse.split('\n\n')[0];
+    console.log("Q5_response updated:", Q5_response.value);
+  } catch (error) {
+    console.error('Error fetching chat response for Q5:', error);
+  }
+};
+
+watch([language_expectations], ([newLanguageExpectations]) => {
+  if (newLanguageExpectations.length > 0) {
+    Q5();
+  }
+}, { immediate: true });
 
 
     onMounted(() => {
       getChatResponse();
       GetStakeholders();
-      GetPurpose();
-      Q3();
-      Q4();
+      //GetPurpose();
+      //Q3();
+      //Q4();
+      Q5();
+      
     });
 
     return {
       response,
       Q3_response,
       Q4_response,
+      Q5_response,
       stakeholder,
       stakeholder_list,
+      //selectedStakeholderLabel,
       purpose,
       purpose_list,
       showOtherInput,
       typeofExplanation,
+      language_expectations,
+      test_plan,
       OtherStakeholder,
       dataModalHeaders,
       dataModalRows,
@@ -374,6 +441,8 @@ export default {
       addField,
       deleteField,
       onStakeholderChange,
+      selectedStakeholderLabel,
+      selectedPurposeLabels,
     };
   },
 };
