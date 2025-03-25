@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  # MLTE backend using local filesystem
+  backend_local:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.local
+    container_name: mlte_backend_local
+    restart: always
+    ports:
+      - "8081:8080"
+    volumes:
+      - local_store:/mnt/store
+
+  # PostgreSQL database
+  db:
+    image: postgres:latest
+    container_name: mlte_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: mlte_user
+      POSTGRES_PASSWORD: mlte_pass
+      POSTGRES_DB: mlte
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # MLTE backend using PostgreSQL
+  backend_postgres:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.postgres
+    container_name: mlte_backend_postgres
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://mlte_user:mlte_pass@db/mlte
+    ports:
+      - "8080:8080"  # MLTE API port
+
+  frontend:
+    build:
+      context: ../mlte/frontend  # Path to frontend directory
+      dockerfile: Dockerfile.frontend
+    container_name: mlte_frontend
+    restart: always
+    depends_on:
+      - backend_local
+    ports:
+      - "3000:3000"  # Access http://localhost:3000
+    environment:
+      - VITE_API_URL=http://localhost:8080
+
+volumes:
+  local_store:
+  postgres_data:

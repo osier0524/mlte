@@ -1,0 +1,24 @@
+# Dockerfile.postgres
+#
+# MLTE backend using PostgreSQL.
+
+FROM python:3.10
+
+# Install Poetry for dependency management
+RUN pip install poetry
+
+# Set working directory
+WORKDIR /mnt/lib
+
+# Copy dependencies and source files
+COPY pyproject.toml poetry.lock /mnt/lib/
+COPY mlte /mnt/lib/mlte
+
+# Install MLTE and dependencies
+RUN poetry install --no-root
+
+# Run the MLTE backend server
+ENTRYPOINT ["mlte", "backend"]
+
+# Use PostgreSQL as the backend store
+CMD ["--store-uri", "postgresql://mlte_user:mlte_pass@db/mlte"]

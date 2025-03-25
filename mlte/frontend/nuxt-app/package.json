@@ -8,10 +8,10 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "eslint --fix --ext .vue,.ts ."  },
-    
+    "lint": "eslint --fix --ext .vue,.ts ."
+  },
   "devDependencies": {
-    "@nuxt/ui": "^2.18.1",
+    "@nuxt/ui": "^2.19.2",
     "@types/node": "^18",
     "@uswds/compile": "^1.0.0",
     "eslint": "^8.45.0",
@@ -20,7 +20,7 @@
     "eslint-plugin-n": "^16.0.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-vue": "^9.15.1",
-    "nuxt": "^3.7.4",
+    "nuxt": "^3.14.159",
     "nuxt-chatgpt": "^0.2.3"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
     "@uswds/uswds": "^3.4.1",
+    "@vue/compiler-sfc": "^3.5.12",
     "chokidar": "^3.5.3",
     "dotenv": "^16.4.5",
     "eslint-config-prettier": "^8.8.0",
@@ -35,11 +36,14 @@
     "glob-parent": "^6.0.2",
     "h3": "^1.12.0",
     "jsonschema": "^1.4.1",
-    "openai": "^4.53.2",
+    "openai": "^4.69.0",
     "prettier": "^3.0.0",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.3.2",
     "typescript": "^5.1.6",
     "url": "^0.11.1",
-    "vue": "3.3",
+    "vue": "^3.5.12",
+    "vue-progressbar": "^0.7.5",
     "vue-tsc": "^1.8.6",
     "vue-uswds": "^1.2.0"
   }

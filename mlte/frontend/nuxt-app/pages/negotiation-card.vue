@@ -816,17 +816,27 @@
       </template>
     </Accordion>
 
- 
-
     <Accordion title="Explainability">
       <template #content>
         <Explainability></Explainability>
       </template>
     </Accordion>
 
+    <Accordion title="Minimum Accuracy Expectation">
+      <template #content>
+        <MinAccExpectation :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
+      </template>
+    </Accordion>
+
     <Accordion title="Robustness">
       <template #content>
         <Robustness :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
+      </template>
+    </Accordion>
+
+    <Accordion title="Evolution">
+      <template #content>
+        <Evolution :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
       </template>
     </Accordion>
 
@@ -859,6 +869,41 @@
           {{ requirement.environment }}. {{ requirement.response }}
           {{ requirement.measure }}.
         </p>
+        <br/>
+        <div class="quality-inspection">
+          <div class="collapsable-header" @click="isExpanded = !isExpanded">
+            <span class="collapsable-title">
+              {{ isExpanded ? '▼' : '▶' }}   Requirement Quality Inspection
+            </span>
+            <span class="collapsable-icons">
+              <span class="warning">
+                <Icon name="mdi:alert-circle-outline" class="icon-warning" />
+                <!-- {{ props.requirement.warnings.length }} -->
+                {{ critiques.warnings.length }}
+              </span>
+              <span class="error">
+                <Icon name="mdi:close-circle-outline" class="icon-error" />
+                <!-- {{ props.requirement.errors.length }} -->
+                {{ critiques.errors.length }}
+              </span>
+            </span>
+          </div>
+
+          <div v-if="isExpanded" class="collapsable-content">
+            <p class="warning-title">Warnings (Qualities do not meet the standard):</p>
+            <p class="warning-list">{{ critiques.warnings.join(", ") }}</p>
+            <br />
+            <p class="error-title">Errors (Quality are completely unsatisfactory):</p>
+            <p class="error-list">{{ critiques.errors.join(", ") }}</p>
+
+            <br />
+            <UsaButton class="primary-button" @click="goToCritiques">
+              See Detailed Critiques
+            </UsaButton>
+          </div>
+          
+        </div>
+        
         <UsaTextInput v-model="requirement.quality">
           <template #label>
             System Quality
@@ -983,6 +1028,40 @@ const path = ref([
     text: "Negotiation Card",
   },
 ]);
+
+const props = defineProps<{
+  requirement: {
+    quality: string;
+    stimulus: string;
+    source: string;
+    environment: string;
+    response: string;
+    measure: string;
+  };
+}>();
+
+const critiques = ref<{ warnings: string[]; errors: string[] }>({
+  warnings: [],
+  errors: [],
+});
+
+const isExpanded = ref(false);
+const router = useRouter();
+
+async function fetchCritiques() {
+  return {
+    warnings: ["Complete", "Unambiguous"],
+    errors: ["Feasible"],
+  };
+}
+
+onMounted(async () => {
+  critiques.value = await fetchCritiques();
+});
+
+const goToCritiques = () => {
+  router.push("/critiques");
+};
 
 const userInputArtifactId = ref("");
 const forceSaveParam = ref(useRoute().query.artifactId !== undefined);
@@ -1691,5 +1770,69 @@ function deleteRequirement(requirementIndex: number) {
 }
 
 </script>
+
+<style scoped>
+.quality-inspection {
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px; 
+}
+
+.collapsable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.collapsable-title {
+  font-weight: bold;
+}
+
+.collapsable-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.warning, .error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-warning {
+  color: gold;
+  font-size: 20px;
+}
+
+.icon-error {
+  color: red;
+  font-size: 20px;
+}
+
+.collapsable-content {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.warning-title,
+.error-title {
+  font-weight: bold;
+}
+
+.warning-list {
+  color: gold;
+}
+
+.error-list {
+  color: red;
+}
+
+
+</style>
+
 
 

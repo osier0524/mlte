@@ -225,6 +225,16 @@
           />
         </div>
       </UsaAccordionItem>
+
+      <UsaAccordionItem label="Critiques">
+        <NuxtLink
+          :to="{
+            path : 'critiques',
+          }"
+        >
+          <UsaButton class="primary-button"> Critique </UsaButton>
+        </NuxtLink>
+      </UsaAccordionItem>
     </UsaAccordion>
   </NuxtLayout>
 </template>

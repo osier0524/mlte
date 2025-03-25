@@ -1,0 +1,27 @@
+# Dockerfile.backend
+#
+# Image definition for MLTE backend container.
+
+FROM python:3.10
+
+# Setup poetry to handle dependencies.
+RUN pip install poetry
+
+# Copy deps and source files.
+WORKDIR /mnt/lib
+COPY pyproject.toml /mnt/lib
+COPY poetry.lock /mnt/lib
+COPY mlte /mnt/lib/mlte
+
+# Install mlte and dependencies
+RUN ["poetry", "install"]
+
+# Create the default storage location
+RUN ["mkdir", "/mnt/store"]
+
+# Run the mlte backend server
+WORKDIR /mnt/lib/mlte
+ENTRYPOINT ["poetry", "run", "python", "cli/cli.py", "backend", "--host", "0.0.0.0"]
+
+# By default, run a local filesystem store
+CMD ["--store-uri", "fs:///mnt/store", "--allowed-origins", "http://localhost:3000"]

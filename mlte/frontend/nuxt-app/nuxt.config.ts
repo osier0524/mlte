@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+
   ssr: false,
   css: ["@/assets/css/styles.css", "@/assets/uswds/css/styles.css"],
   nitro: {
@@ -13,6 +14,7 @@ export default defineNuxtConfig({
     // "/api/**": { proxy: "http://localhost:8080/api/**" },
     },
   },
+
   runtimeConfig: {
     private: {apiKey: process.env.OPENAI_API_KEY},
     public: {
@@ -20,5 +22,7 @@ export default defineNuxtConfig({
       version: pkg.version,
     },
   },
+
   modules: ["@nuxt/ui"],
+  compatibilityDate: "2024-10-11",
 });

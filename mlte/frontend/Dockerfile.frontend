@@ -1,0 +1,17 @@
+# Dockerfile.frontend
+#
+# MLTE frontend container.
+
+FROM node:23.2.0
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+
+# Run the frontend server
+CMD ["npm", "run", "dev"]

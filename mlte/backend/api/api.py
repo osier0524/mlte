@@ -6,7 +6,8 @@ Top-level API functionality.
 
 from fastapi import APIRouter
 
-from mlte.backend.api.endpoints import artifact, health, metadata, token, user
+from mlte.backend.api.endpoints import artifact, health, metadata, token, user, prompt
+from mlte.backend.api.critique_endpoints import critique_artifact
 
 # The common URL prefix for all artifact routes
 _ARTIFACT_PREFIX = "/model/{model_id}/version/{version_id}"
@@ -22,3 +23,5 @@ api_router.include_router(
     prefix=f"{_ARTIFACT_PREFIX}/artifact",
     tags=["artifact"],
 )
+api_router.include_router(prompt.router, tags=["prompt"])
+api_router.include_router(critique_artifact.router, prefix="/artifacts", tags=["critique_artifact"])
