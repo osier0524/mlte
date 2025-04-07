@@ -2,32 +2,38 @@
     <div class="requirement-list">
       <ul>
         <li v-for="(requirement, index) in filterRequirements" :key="index">
-          <RequirementCard :requirement="requirement" />
+          <RequirementCard 
+          :requirement="requirement" 
+          :index="index"
+          />
         </li>
       </ul>
     </div>
   </template>
   
   <script setup>
+  import axios from 'axios';
+
 
   const props = defineProps({
+    artifactId: Number,
     filters: Array,
   })
+  const config = useRuntimeConfig();
   
   const requirements = ref([]);
   
   const fetchRequirements = async () => {
-    // const response = await fetch('/api/requirements');
-    // const data = await response.json();
-    // requirements.value = data;
-    // mock data
+
     try {
-      const response = await fetch('/data/requirements.json');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      requirements.value = data;
+      // const response = await fetch('/data/requirements.json');
+      const response = await axios.get(
+        config.public.apiPath + '/requirements/artifact/' 
+        + props.artifactId + '/details'
+      )
+      // const data = await response.json();
+      console.log(response.data.requirements);
+      requirements.value = response.data.requirements;
     } catch (error) {
       console.error('There was a problem with your fetch operation:', error);
     }
@@ -42,6 +48,10 @@
     return requirements.value.filter(requirement => 
       requirement.category.some(cat => props.filters.includes(cat))
     );
+  });
+
+  watchEffect(() => {
+    console.log('Filtered requirements:', filterRequirements.value);
   });
   
 
