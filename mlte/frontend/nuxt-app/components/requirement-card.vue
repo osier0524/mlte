@@ -1,45 +1,25 @@
 <template>
     <div class="requirement-card">
       <div class="requirement-header">
-        <span class="requirement-id">{{ "Requirement " + requirement.id }}</span> 
-        <span class="requirement-category">{{ requirement.category.join(", ") }}</span>
+        <span class="requirement-id">{{ "Requirement " + (index + 1) }}</span> 
+        <span class="requirement-category">{{ requirement.categories.join(", ") }}</span>
       </div>
       
       <div class="requirement-body">
-        <p v-html="requirement.description"></p>
+        <p v-html="requirement.content"></p>
         <!-- <p v-if="requirement.description">{{ requirement.description }}</p> -->
         <!-- <p v-else>No description provided.</p> -->
       </div>
 
       <br />
       
-      <div v-if="requirement.feedback">
-        <QualityInspection :critiques="requirement.feedback" />
+      <div v-if="requirement.feedbacks">
+        <QualityInspection :critiques="transformedCritiques" />
       </div>
 
 
 
       <br />
-
-      <!-- Warnings Section -->
-      <!-- <div v-if="requirement.warnings && requirement.warnings.length" class="requirement-warnings">
-        <span class="warnings-title">Warnings {{ requirement.warnings.length }}</span>
-        <ul>
-          <li v-for="(warning, index) in requirement.warnings" :key="'warn-' + index">
-            {{ index + 1 }}. {{ warning }}
-          </li>
-        </ul>
-      </div> -->
-
-      <!-- Errors Section -->
-      <!-- <div v-if="requirement.errors && requirement.errors.length" class="requirement-errors">
-        <span class="errors-title">Errors {{ requirement.errors.length }}</span>
-        <ul>
-          <li v-for="(error, index) in requirement.errors" :key="'err-' + index">
-            {{ index + 1 }}. {{ error }}
-          </li>
-        </ul>
-      </div> -->
 
       <!-- Edit Button -->
       <UsaButton class="secondary-button" @click="goToNCard">
@@ -54,7 +34,40 @@
     requirement: {
       type: Object,
       required: true
+    },
+    index: {
+      type: Number,
+      required: true
     }
+  });
+
+  const transformedCritiques = computed(() => {
+    const result = {
+      warnings: {},
+      errors: {}
+    }
+    
+    if (!props.requirement.feedbacks || !Array.isArray(props.requirement.feedbacks)) {
+      return result;
+    }
+
+    for (const feedback of props.requirement.feedbacks) {
+      const level = feedback.level;
+      const target = level === 'warning' ? result.warnings : result.errors;
+
+      for (const quality of feedback.qualities) {
+        if (!target[quality.name]) {
+          target[quality.name] = [];
+        }
+        target[quality.name].push(...quality.critiques);
+      }
+    }
+
+    return result;
+  })
+
+  watchEffect(() => {
+    console.log('Transformed critiques:', transformedCritiques.value);
   });
 
   </script>
