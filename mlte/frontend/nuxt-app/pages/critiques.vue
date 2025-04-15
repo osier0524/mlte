@@ -3,16 +3,21 @@
     <div class="left-section">
       <div class="section-header">
         <h1 class="header-title">Individual Requirement Quality</h1>
-        <div class="header-badge">{{ metRequirementsCount }}/{{ totalRequirementsCount }}</div>
+        <div class="header-badge">{{ stats.metRequirementsCount }}/{{ stats.totalRequirementsCount }}</div>
       </div>
       
       <div class="filter-section">
-        <CritiqueFilter @update:selected="selectedLeftFilters = $event" />
+        <CritiqueFilter
+          v-model="selectedLeftFilters"
+          @update:selected="selectedLeftFilters = $event" 
+        />
       </div>
       
       <RequirementList 
         :filters="selectedLeftFilters"
         :artifactId="artifactId"
+        :cardInfo="cardInfo"
+        @update-stats="updateStats"
       />
     </div>
     
@@ -39,89 +44,54 @@
       </div>
       
       <div class="filter-section">
-        <CritiqueFilter @update:selected="selectedRightFilters = $event" />
+        <CritiqueFilter 
+          v-model="selectedRightFilters"
+          @update:selected="selectedRightFilters = $event" />
       </div>
       
-      <div class="quality-meters">
+      <!-- <div class="quality-meters">
         <QualityMeter 
-          v-for="quality in filteredSetQualities"
+          v-for="quality in setQualities"
           :key="quality.name"
           :title="quality.name"
           :summary="quality.summary"
           :percentage="quality.percentage"
           :critiques="quality.critique"
         />
+      </div> -->
+
+      <div class="quality-meters">
+        <div v-if="isSetCritiqueLoading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <div class="loading-text">Generating quality analysis...</div>
+        </div>
+        <template v-else>
+          <QualityMeter 
+            v-for="quality in setQualities"
+            :key="quality.name"
+            :title="quality.name"
+            :summary="quality.summary"
+            :percentage="quality.percentage"
+            :critiques="quality.critique"
+          />
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import axios from 'axios';
 
+const config = useRuntimeConfig();
 const route = useRoute();
-const artifactId = Number(route.query.artifactId);
+const artifactId = Number(route.query.intId);
 
-const individualQualities = ref([
-  {
-    name: 'Necessary',
-    isMet: false,
-    critique: [
-      { requirement: 'R1', critics: ['Critique 1', 'Critique 2'] },
-      { requirement: 'R2', critics: ['Critique 2'] },
-    ],
-  },
-  {
-    name: 'Appropriate',
-    isMet: false,
-    critique: [
-      { requirement: 'R3', critics: ['Critique 1'] },
-    ],
-  },
-  {
-    name: 'Unambiguous',
-    isMet: true,
-    critique: [],
-  },
-  {
-    name: 'Complete',
-    isMet: false,
-    critique: [
-      { requirement: 'R1', 
-        critics: [
-        'The term \'high level of accuracy\' is vague and lacks quantifiable targets. Without a specific accuracy percentage or error rate defined, it is challenging to measure or validate the requirement objectively during implementation and testing.',
-        'The phrase \'major performance degradation\' is subjective and undefined. This requirement would be stronger with a clear definition or specific threshold that quantifies what constitutes major degradation, such as acceptable response times or error rates under specified conditions.'
-        ] 
-      },
-    ],
-  },
-  {
-    name: 'Singular',
-    isMet: true,
-    critique: [],
-  },
-  {
-    name: 'Feasible',
-    isMet: false,
-    critique: [
-      { requirement: 'R4', critics: ['Critique 1'] },
-    ],
-  },
-  {
-    name: 'Verifiable',
-    isMet: true,
-    critique: [],
-  },
-  {
-    name: 'Correct',
-    isMet: true,
-    critique: [],
-  },
-  {
-    name: 'Conforming',
-    isMet: true,
-    critique: [],
-  }
-]);
+const cardInfo = {
+  model: route.query.model,
+  version: route.query.version,
+  artifactId: route.query.artifactId,
+}
 
 const setQualities = ref([
   {
@@ -167,12 +137,35 @@ const setQualities = ref([
   },
 ]);
 
+const isSetCritiqueLoading = ref(false);
+
 const selectedLeftFilters = ref([]);
 const selectedRightFilters = ref([]);
 
+watchEffect(() => {
+  console.log('Selected Left Filters:', selectedLeftFilters.value);
+});
+
+watchEffect(() => {
+  console.log('Selected Right Filters:', selectedRightFilters.value);
+});
+
+onMounted(() => {
+  console.log('Artifact ID:', artifactId);
+  checkAndMaybeCritique();
+  fetchQualities();
+});
+
 // Computed values for summary statistics
-const metRequirementsCount = computed(() => individualQualities.value.filter(q => q.isMet).length);
-const totalRequirementsCount = computed(() => individualQualities.value.length);
+const stats = reactive({
+  metRequirementsCount: 0,
+  totalRequirementsCount: 0,
+});
+
+function updateStats({ total, met }) {
+  stats.totalRequirementsCount = total;
+  stats.metRequirementsCount = met;
+}
 
 const metQualitiesCount = computed(() => setQualities.value.filter(q => q.isMet).length);
 const totalQualitiesCount = computed(() => setQualities.value.length);
@@ -182,14 +175,99 @@ const overallPercentage = computed(() => {
   return Math.round(total / setQualities.value.length);
 });
 
-const filteredSetQualities = computed(() => {
+
+const versionMap = ref(getVersionMap());
+
+// Check if the requirements set in database has been updated
+// If updated, critize them
+async function checkAndMaybeCritique() {
+  const filterKey = generateFilterKey(selectedRightFilters.value);
+  const cacheKey = `${artifactId}:${filterKey}`;
+  let filter_criteria = '';
   if (selectedRightFilters.value.length === 0) {
-    return setQualities.value;
+    filter_criteria = 'All';
+  } else {
+    // sort and join
+    filter_criteria = selectedRightFilters.value.sort().join(',');
   }
-  return setQualities.value.filter(quality => 
-    selectedRightFilters.value.includes(quality.isMet ? 'met' : 'notMet')
-  );
-});
+  const res = await axios.post(
+    `${config.public.apiPath}/critiques/set-critique/version`,
+    {
+      artifact_id: artifactId,
+      filter_criteria: filter_criteria,
+    }
+  )
+  console.log('Version response:', res.data);
+  const version = res.data.version;
+  console.log('Version:', version);
+  console.log('Old Version:', versionMap.value.get(cacheKey));
+
+  if (versionMap.value.get(cacheKey) !== version) {
+    // trigger set critique
+    isSetCritiqueLoading.value = true;
+    try {
+      const response = await axios.post(
+        `${config.public.apiPath}/critiques/set-critique`,
+        {
+          artifact_id: artifactId,
+          filter_criteria: filter_criteria,
+        }
+      );
+      versionMap.value.set(cacheKey, version);
+      saveVersionMap(versionMap.value);      
+    } catch (error) {
+      console.error('Error fetching critiques:', error);
+    } finally {
+      isSetCritiqueLoading.value = false;
+    }
+  } else {
+    console.log('Version unchanged, no need to regnerate critiques.');
+  }
+}
+
+// fetch quality from the server
+const fetchQualities = async () => {
+  try {
+    let filter_criteria = '';
+    if (selectedRightFilters.value.length === 0) {
+      filter_criteria = 'All';
+    } else {
+      // sort and join
+      filter_criteria = selectedRightFilters.value.sort().join(',');
+    }
+    console.log('filter_criteria:', filter_criteria);
+    const response = await axios.get(
+      `${config.public.apiPath}/artifacts/${artifactId}/set-critique`,
+      {
+        params: {
+          filter_criteria: filter_criteria,
+        },
+      }
+    );
+    console.log('Fetched qualities:', response.data);
+    console.log('Fetched qualities:', response.data.qualities);
+    if (response.data.qualities) {
+      setQualities.value = response.data.qualities.map((q) => ({
+        ...q,
+        isMet: q.percentage === 100,
+      }));
+    } else {
+      setQualities.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching qualities:', error);
+  } finally {
+    isSetCritiqueLoading.value = false;
+  }
+};
+
+// Fetch critiques when selected filters change
+watch(selectedRightFilters, (newFilters) => {
+  console.log('Selected Right Filters changed:', newFilters);
+  checkAndMaybeCritique();
+  fetchQualities();
+}, { deep: true });
+
 
 // Helper functions
 const getStatusColor = (percentage) => {
@@ -199,6 +277,20 @@ const getStatusColor = (percentage) => {
   if (percentage >= 30) return '#FF9800'; // Orange
   return '#F44336'; // Red
 };
+
+function getVersionMap() {
+  const raw = localStorage.getItem('versionMap');
+  if (!raw) return new Map();
+  return new Map(JSON.parse(raw));
+}
+
+function saveVersionMap (map) {
+  localStorage.setItem('versionMap', JSON.stringify([...map.entries()]));
+}
+
+function generateFilterKey(filterArray) {
+  return [...filterArray].sort().join(',');
+}
 </script>
 
 <style scoped>
@@ -307,18 +399,35 @@ const getStatusColor = (percentage) => {
   gap: 16px;
 }
 
-@media (max-width: 768px) {
-  .critiques-container {
-    flex-direction: column;
-  }
-  
-  .left-section, .right-section {
-    width: 100%;
-  }
-  
-  .left-section {
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-  }
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: 200px;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #3498db;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.loading-text {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>

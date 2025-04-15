@@ -227,19 +227,51 @@
       </UsaAccordionItem>
 
       <UsaAccordionItem label="Critiques">
-        <NuxtLink
-          :to="{
-            path : 'critiques',
-          }"
-        >
-          <UsaButton class="primary-button"> Critique </UsaButton>
-        </NuxtLink>
+        <div class="scrollable-table-div">
+          <p>
+            Critiques are the result of the quality inspection process. They
+            provide a detailed evaluation of the model's performance and
+            adherence to the specified requirements.
+          </p>
+          <table class="table usa-table usa-table--borderless">
+              <thead>
+                <tr>
+                  <th data-sortable scope="col" role="columnheader">ID</th>
+                  <th scope="col" role="columnheader" style="text-align: right; padding-right: 2.5rem;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(artifact, i) in artifactsInDatabase" :key="artifact.artifact_id">
+                  <th scope="row">{{ artifact.name }}</th>
+                  <td style="text-align: right; padding-right: 0.5rem;">
+                    <NuxtLink
+                      :to="{
+                        path: 'critiques',
+                        query: {
+                          model: negotiationCards[i].model,
+                          version: negotiationCards[i].version,
+                          artifactId: negotiationCards[i].id,
+                          intId: artifact.artifact_id,
+                        },
+                      }"
+                    >
+                      <UsaButton class="primary-button"> Critiques </UsaButton>
+                    </NuxtLink>
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+        </div>
       </UsaAccordionItem>
     </UsaAccordion>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
+import { version } from 'os';
+import type internal from 'stream';
+
 const config = useRuntimeConfig();
 const token = useCookie("token");
 const path = ref([
@@ -248,6 +280,30 @@ const path = ref([
     text: "",
   },
 ]);
+
+// fetch artifact data from the server
+interface Artifact {
+  artifact_id: number;
+  name: string;
+  project_description: string;
+  ml_task?: string;
+  usage_context?: string;
+  target_audience?: string;
+  dataset_description?: string;
+}
+
+const artifactsInDatabase = ref<Artifact[]>([])
+
+onMounted(async() => {
+  try {
+    const response = await axios.get(
+      config.public.apiPath + "/artifacts"
+    )
+    artifactsInDatabase.value = response.data
+  } catch (error) {
+    console.error("Error fetching artifacts:", error)
+  }
+})
 
 const modelOptions = ref<{ value: string; text: string }[]>([]);
 const versionOptions = ref<{ value: string; text: string }[]>([]);
