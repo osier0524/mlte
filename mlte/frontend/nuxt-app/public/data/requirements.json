@@ -1,0 +1,74 @@
+[
+    {
+      "id": 1,
+      "title": "Requirement 1",
+      "description": "The model shall recognize at least 50 different types of road signs (such as stop sign, yield sign) and achieve an average accuracy of no less than 95% on the standard test set.",
+      "category": ["Functional", "Robustness"],
+      "feedback": {
+        "warnings": {
+          "Feasible": [
+            "Requirement may not be achievable with current resources.",
+            "Lack of feasibility analysis."
+          ],
+          "Unambiguous": [
+            "Requirement statement has multiple interpretations."
+          ]
+        },
+        "errors": {
+          "Complete": [
+            "Requirement is incomplete.",
+            "Missing critical user interaction specifications."
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Requirement 2",
+      "description": "When the input contains blurred, occluded, or partially damaged road signs, the model shall correctly classify the sign and ensure an accuracy of no less than 85%.",
+      "category": ["Functional", "Robustness"]
+    },
+    {
+      "id": 3,
+      "title": "Requirement 3",
+      "description": "In nighttime or low-light environments, the model shall enhance its ability to recognize low-contrast signs and ensure a false detection rate of no more than 5%.",
+      "category": ["Functional", "Robustness"]
+    },
+    {
+      "id": 4,
+      "title": "Requirement 4",
+      "description": "The training dataset shall include samples from various weather conditions (e.g., rainy, foggy, and snowy days). The model shall optimize its robustness to environmental changes and maintain a recognition accuracy of at least 90% across all weather conditions.",
+      "category": ["Functional", "Robustness"]
+    },
+    {
+      "id": 5,
+      "title": "Requirement 5",
+      "description": "When the input image contains multiple overlapping road signs, the model shall correctly detect and classify each sign to ensure a false detection rate of no more than 3%  on the standard test set.",
+      "category": ["Functional"]
+    },
+    {
+      "id": 6,
+      "title": "Requirement 6",
+      "description": "The model shall perform inference on a standard GPU device and ensure that the inference time per frame does not exceed 50 milliseconds.",
+      "category": ["Functional"]
+    },
+    {
+      "id": 7,
+      "title": "Requirement 7",
+      "description": "The model shall perform inference on a standard GPU device and ensure that the inference time per frame does not exceed 50 milliseconds.",
+      "category": ["Non-Functional"]
+    },
+    {
+      "id": 8,
+      "title": "Requirement 8",
+      "description": "The model shall correctly classify road signs that are subject to degradation, including blur, occlusion, and partial damage, as defined by augmentation techniques, e.g., Gaussian blur (σ ≤ 2), occlusion covering ≤ 30% of the sign, or synthetic damage patterns. The model shall achieve an average classification accuracy of no less than 85% on a designated robustness test set containing such degraded samples.",
+      "category": ["Non-Functional"]
+    },
+    {
+      "id": 9,
+      "title": "Requirement 9",
+      "description": "The model shall be capable of recognizing road signs in nighttime or low-light environments, defined as ambient illumination below 1000 lux. The model shall achieve a false detection rate of no more than 5% on low-contrast signs, defined as having a contrast ratio below 0.2. ",
+      "category": ["Non-Functional"]
+    }
+]
+  

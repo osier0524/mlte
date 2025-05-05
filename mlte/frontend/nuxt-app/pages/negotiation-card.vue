@@ -742,7 +742,7 @@
       </UsaTextInput>
     </div>
 
-    <div class="input-group" style="margin-top: 1em">
+    <!-- <div class="input-group" style="margin-top: 1em">
       <SubHeader>
         Production Compute Resources
         <template #example>
@@ -780,7 +780,7 @@
           </UsaTextInput>
         </div>
       </div>
-    </div>
+    </div> -->
 
   <br/>
     <h2 class="section-header">System Requirements</h2>
@@ -834,9 +834,27 @@
       </template>
     </Accordion>
 
+    <Accordion title="Minimum Accuracy Expectation">
+      <template #content>
+        <MinAccExpectation :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
+      </template>
+    </Accordion>
+
+    <Accordion title="Minimum Accuracy Expectation">
+      <template #content>
+        <MinAccExpectation :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
+      </template>
+    </Accordion>
+
     <Accordion title="Robustness">
       <template #content>
         <Robustness :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
+      </template>
+    </Accordion>
+
+    <Accordion title="Evolution">
+      <template #content>
+        <Evolution :problemType="form.system.problem_type" :MLTask="form.system.task" :usageContext="form.system.usage_context"/>
       </template>
     </Accordion>
 
@@ -844,7 +862,7 @@
     <br/>
 
     <!--TODO: Delete Prior Version -->
-    <div class="input-group">
+    <!-- <div class="input-group">
       <SubHeader :render-info="false">
         Requirements
         <template #example>
@@ -865,11 +883,79 @@
         </h3>
         <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
           <b>Scenario for {{ requirement.quality }}: </b>
-          >{{ requirement.stimulus }} from {{ requirement.source }} during
-          {{ requirement.environment }}. {{ requirement.response }}
-          {{ requirement.measure }}.
+          {{ requirement.content }}
         </p>
+        <br/>
+        <div class="quality-inspection">
+          <div class="collapsable-header" @click="isExpanded = !isExpanded">
+            <span class="collapsable-title">
+              {{ isExpanded ? '▼' : '▶' }}   Requirement Quality Inspection
+            </span>
+            <span class="collapsable-icons">
+              <span class="warning">
+                <Icon name="mdi:alert-circle-outline" class="icon-warning" />
+                {{ props.requirement.warnings.length }}
+                {{ critiques.warnings.length }}
+              </span>
+              <span class="error">
+                <Icon name="mdi:close-circle-outline" class="icon-error" />
+                {{ props.requirement.errors.length }}
+                {{ critiques.errors.length }}
+              </span>
+            </span>
+          </div>
+
+          <div v-if="isExpanded" class="collapsable-content">
+            <p class="warning-title">Warnings (Qualities do not meet the standard):</p>
+            <p class="warning-list">{{ critiques.warnings.join(", ") }}</p>
+            <br />
+            <p class="error-title">Errors (Quality are completely unsatisfactory):</p>
+            <p class="error-list">{{ critiques.errors.join(", ") }}</p>
+
+            <br />
+            <UsaButton class="primary-button" @click="goToCritiques">
+              See Detailed Critiques
+            </UsaButton>
+          </div>
+          
+          <span class="AIgeneratedtext" id="cautiontext"> The above evaluation is provided by AI. AI can make mistakes. </span>
+        </div>
         <UsaTextInput v-model="requirement.quality">
+          <template #label>
+            System Quality
+            <InfoIcon>
+              System property by which the model will be evaluated <br />
+              (e.g., Accuracy, Performance, Robustness, Fairness, Resource
+              Consumption).
+              <br />
+              <br />
+              <i>Example: Response time.</i>
+            </InfoIcon>
+          </template>
+        </UsaTextInput>
+
+        <UsaSelect v-model="requirement.category">
+          <template #label>
+            Requirement Category
+            <InfoIcon>
+              Classify the requirement as either functional or non-functional.
+              <br /><br />
+              <i>Example: Non-functional – Response time.</i>
+            </InfoIcon>
+          </template>
+          <option value="">Please select</option>
+          <option value="functional">Functional</option>
+          <option value="non-functional">Non-functional</option>
+        </UsaSelect>
+
+        <UsaTextInput v-model="requirement.content">
+          <template #label>
+            Requirement Content
+          </template>
+        </UsaTextInput> -->
+
+        
+        <!-- <UsaTextInput v-model="requirement.quality">
           <template #label>
             System Quality
             <InfoIcon>
@@ -957,8 +1043,10 @@
               <i>Example: At most 5 seconds.</i>
             </InfoIcon>
           </template>
-        </UsaTextInput>
-        <DeleteButton
+        </UsaTextInput> -->
+
+
+        <!-- <DeleteButton
           class="margin-button"
           @click="deleteRequirement(requirementIndex)"
         >
@@ -969,19 +1057,59 @@
       <AddButton class="margin-button" @click="addRequirement()">
         Add Requirement
       </AddButton>
-    </div>
+    </div> -->
 
+    <br/>
+    <div class="input-group">
+      <SubHeader :render-info="false">
+        Simple Requirements
+        <template #example>
+          <UsaTable
+            :headers="systemModalHeaders"
+            :rows="systemModalRows"
+            borderless
+            class="table"
+          />
+        </template>
+      </SubHeader>
+      
+      <RequirementConstruction
+        v-if="databaseArtifactId !== undefined"
+        v-for="(req, idx) in form.system_requirements"
+        :key="idx"
+        :card="card"
+        :artifact-id="databaseArtifactId"
+        :requirement="req"
+        :requirement-index="idx"
+        @delete-requirement="deleteRequirement"
+        @submit="submit"
+        ref="requirementRefs"
+      />
+
+      <AddButton class="margin-button" @click="addRequirement()">
+        Add Requirement
+      </AddButton>
+
+    </div>
+    
     <div class="submit-footer">
       <UsaButton class="primary-button" @click="cancelFormSubmission('/')">
         Cancel
       </UsaButton>
       <UsaButton class="primary-button" @click="submit()"> Save </UsaButton>
     </div>
+
+    <Toast ref="toastRef" />
+
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+import axios from "axios";
+import Toast from "../components/toast.vue";
+
 const config = useRuntimeConfig();
+const router = useRouter();
 const token = useCookie("token");
 const path = ref([
   {
@@ -993,6 +1121,91 @@ const path = ref([
     text: "Negotiation Card",
   },
 ]);
+
+// const props = defineProps<{
+//   requirement: {
+//     quality: string;
+//     category: string;
+//     stimulus: string;
+//     source: string;
+//     environment: string;
+//     response: string;
+//     measure: string;
+//     content: string;
+//   };
+// }>();
+
+const toastRef = ref<InstanceType<typeof Toast> | null>(null);
+
+onMounted(() => {
+  if (toastRef.value) {
+    setToastInstance(toastRef.value as unknown as ToastInstance);
+  }
+});
+
+const requirementRefs = ref([]);
+
+onMounted(async () => {
+  const requirementIndex = useRoute().query.requirementIndex;
+  console.log("Requirement Index:", requirementIndex);
+  if (requirementIndex !== undefined) {
+    await nextTick();
+
+    setTimeout(() => {
+      if (requirementRefs.value[Number(requirementIndex)]) {
+        const element = requirementRefs.value[Number(requirementIndex)].$el;
+        if (element) {
+          console.log("Scrolling to element with delay:", element);
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          
+          element.classList.add('highlight-requirement-blink');
+          setTimeout(() => {
+            element.classList.remove('highlight-requirement-blink');
+          }, 8000);
+        }
+      }
+    }, 100);
+  }
+})
+
+const card = {
+  model: useRoute().query.model as string,
+  version: useRoute().query.version as string,
+  artifactId: useRoute().query.artifactId as string,
+}
+
+const critiques = ref<{ warnings: string[]; errors: string[] }>({
+  warnings: [],
+  errors: [],
+});
+
+const isExpanded = ref(false);
+
+async function fetchCritiques() {
+  return {
+    warnings: ["Complete", "Unambiguous"],
+    errors: ["Feasible"],
+  };
+}
+
+onMounted(async () => {
+  critiques.value = await fetchCritiques();
+});
+
+const databaseArtifactId = ref<number | undefined>(undefined);
+
+onMounted(() => {
+  if (useRoute().query.artifactId) {
+    const storageKey = `artifact_id_${useRoute().query.artifactId}`;
+    const savedId = localStorage.getItem(storageKey);
+    if (savedId) {
+      databaseArtifactId.value = Number(savedId);
+      console.log("Artifact ID from local storage:", databaseArtifactId.value);
+    } else {
+      console.log("No artifact ID found in local storage.");
+    }
+  }
+});
 
 const userInputArtifactId = ref("");
 const forceSaveParam = ref(useRoute().query.artifactId !== undefined);
@@ -1183,6 +1396,7 @@ const form = ref({
     problem_type: "classification",
     task: "",
     usage_context: "",
+    target_audience: "",
     risks: {
       fp: "",
       fn: "",
@@ -1251,12 +1465,15 @@ const form = ref({
   },
   system_requirements: [
     {
+      id: null,
       quality: "<System Quality>",
+      category: "<Requirement Category>",
       stimulus: "<Stimulus>",
       source: "<Source>",
       environment: "<Environment>",
       response: "<Response>",
       measure: "<Response Measure>",
+      content: "<Requirement Content>",
     },
   ],
 });
@@ -1386,6 +1603,8 @@ async function submit() {
     },
   };
 
+  console.log("System Requirements: ", form.value.system_requirements)
+
   if (isValidNegotiation(artifact)) {
     try {
       await $fetch(
@@ -1418,14 +1637,74 @@ async function submit() {
           },
         },
       );
-      successfulSubmission("negotiation card", identifier);
+      
+      toast.success(
+        "Successfully submitted the negotiation card with ID: " +
+          identifier +
+          ".",
+      );
       forceSaveParam.value = true;
     } catch (error) {
-      console.log("Error in fetch.");
+      toast.error(
+        "Error submitting the negotiation card with ID: " +
+          identifier +
+          ". Please try again.",
+      );
       console.log(error);
     }
+    saveArtifactToDatabase(artifact);
   } else {
     console.log("Invalid document attempting to be submitted.");
+  }
+}
+
+async function saveArtifactToDatabase(artifact: any) {
+  try {
+    if (useRoute().query.artifactId !== undefined) {
+      console.log("Updating existing artifact");
+      // Update existing artifact
+      const request_body = {
+        artifact_id: databaseArtifactId.value,
+        name: artifact.header.identifier,
+        project_description: artifact.body.system.goals[0]?.description,
+        ml_task: artifact.body.system.task,
+        usage_context: artifact.body.system.usage_context,
+        target_audience: artifact.body.system.target_audience,
+        dataset_description: artifact.body.data.description,
+      };
+      // print request_body
+      console.log("request_body: ", request_body);
+      const response = await axios.post(
+        config.public.apiPath + "/artifacts/" + databaseArtifactId.value,
+        request_body,
+      );
+      const intId = response.data.artifact_id;
+      databaseArtifactId.value = intId;
+      const storageKey = `artifact_id_${artifact.header.identifier}`;
+      localStorage.setItem(storageKey, intId.toString());
+    } else {
+      // Create a new artifact
+      console.log("Creating new artifact");
+      const request_body = {
+        name: artifact.header.identifier,
+        project_description: artifact.body.system.goals[0]?.description,
+        ml_task: artifact.body.system.task,
+        usage_context: artifact.body.system.usage_context,
+        target_audience: artifact.body.system.target_audience,
+        dataset_description: artifact.body.data.description,
+      };
+      console.log("request_body: " + request_body);
+      const response = await axios.post(config.public.apiPath + "/artifacts" , request_body);
+      console.log(response);
+      const intId = response.data.artifact_id;
+      databaseArtifactId.value = intId;
+      const storageKey = `artifact_id_${artifact.header.identifier}`;
+      localStorage.setItem(storageKey, intId.toString());
+    }
+
+  } catch (error) {
+    console.log("Error in fetch.");
+    console.log(error);
   }
 }
 
@@ -1685,21 +1964,122 @@ function deleteField(dataItemIndex: number, fieldIndex: number) {
 
 function addRequirement() {
   form.value.system_requirements.push({
+    id: null,
     quality: "<System Quality>",
+    category: "<Requirement Category>",
     stimulus: "<Stimulus>",
     source: "<Source>",
     environment: "<Environment>",
     response: "<Response>",
     measure: "<Response Measure>",
+    content: "<Requirement Content>",
   });
 }
 
 function deleteRequirement(requirementIndex: number) {
   if (confirm("Are you sure you want to delete this requirement?")) {
     form.value.system_requirements.splice(requirementIndex, 1);
+    // TODO: Delete from database
   }
 }
 
 </script>
+
+<style scoped>
+
+.highlight-requirement {
+  animation: highlight-fade 2s;
+}
+
+@keyframes highlight-fade {
+  0% { background-color: rgba(255, 235, 59, 0.5); }
+  100% { background-color: transparent; }
+}
+
+.highlight-requirement-blink {
+  animation: blink-highlight 3s;
+}
+
+@keyframes blink-highlight {
+  0%, 100% { background-color: transparent; }
+  20% { background-color: rgba(255, 235, 59, 0.5); }
+  40% { background-color: transparent; }
+  60% { background-color: rgba(255, 235, 59, 0.5); }
+  80% { background-color: transparent; }
+}
+
+.quality-inspection {
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px; 
+}
+
+.collapsable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.collapsable-title {
+  font-weight: bold;
+}
+
+.collapsable-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.warning, .error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-warning {
+  color: gold;
+  font-size: 20px;
+}
+
+.icon-error {
+  color: red;
+  font-size: 20px;
+}
+
+.collapsable-content {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.warning-title,
+.error-title {
+  font-weight: bold;
+}
+
+.warning-list {
+  margin-left: 10px;
+  color: rgb(193, 156, 9)}
+
+.error-list {
+  margin-left: 10px;
+  color: red;
+}
+
+.AIgeneratedtext{
+  background-color: #efe8c7;
+  font-style: italic;
+}
+
+#cautiontext{
+  font-size: 12px;
+  font-style: italic;
+  text-align: center;
+}
+
+</style>
+
 
 

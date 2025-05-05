@@ -225,11 +225,53 @@
           />
         </div>
       </UsaAccordionItem>
+
+      <UsaAccordionItem label="Critiques">
+        <div class="scrollable-table-div">
+          <p>
+            Critiques are the result of the quality inspection process. They
+            provide a detailed evaluation of the model's performance and
+            adherence to the specified requirements.
+          </p>
+          <table class="table usa-table usa-table--borderless">
+              <thead>
+                <tr>
+                  <th data-sortable scope="col" role="columnheader">ID</th>
+                  <th scope="col" role="columnheader" style="text-align: right; padding-right: 2.5rem;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(artifact, i) in artifactsInDatabase" :key="artifact.artifact_id">
+                  <th scope="row">{{ artifact.name }}</th>
+                  <td style="text-align: right; padding-right: 0.5rem;">
+                    <NuxtLink
+                      :to="{
+                        path: 'critiques',
+                        query: {
+                          model: negotiationCards[i].model,
+                          version: negotiationCards[i].version,
+                          artifactId: negotiationCards[i].id,
+                          intId: artifact.artifact_id,
+                        },
+                      }"
+                    >
+                      <UsaButton class="primary-button"> Critiques </UsaButton>
+                    </NuxtLink>
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+        </div>
+      </UsaAccordionItem>
     </UsaAccordion>
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+import axios from 'axios';
+import { version } from 'os';
+import type internal from 'stream';
+
 const config = useRuntimeConfig();
 const token = useCookie("token");
 const path = ref([
@@ -238,6 +280,30 @@ const path = ref([
     text: "",
   },
 ]);
+
+// fetch artifact data from the server
+interface Artifact {
+  artifact_id: number;
+  name: string;
+  project_description: string;
+  ml_task?: string;
+  usage_context?: string;
+  target_audience?: string;
+  dataset_description?: string;
+}
+
+const artifactsInDatabase = ref<Artifact[]>([])
+
+onMounted(async() => {
+  try {
+    const response = await axios.get(
+      config.public.apiPath + "/artifacts"
+    )
+    artifactsInDatabase.value = response.data
+  } catch (error) {
+    console.error("Error fetching artifacts:", error)
+  }
+})
 
 const modelOptions = ref<{ value: string; text: string }[]>([]);
 const versionOptions = ref<{ value: string; text: string }[]>([]);
@@ -317,6 +383,7 @@ if (modelOptions.value !== null && modelOptions.value.length > 0) {
     selectedVersion.value = "";
   }
   if (selectedModel.value !== "") {
+    console.log("Selected model: ", selectedModel.value);
     await selectModel(selectedModel.value, true);
     const versionList = versionOptions.value.map((version) => {
       return version.value;
@@ -332,54 +399,59 @@ if (modelOptions.value !== null && modelOptions.value.length > 0) {
 
 // Update the selected model for the artifact store.
 async function selectModel(modelName: string, initialPageLoad: boolean) {
-  selectedModel.value = modelName;
-  if (!initialPageLoad) {
-    selectedVersion.value = "";
-  }
-  if (modelName === "") {
-    versionOptions.value = [];
-    clearArtifacts();
-    return;
-  }
-
-  await $fetch(config.public.apiPath + "/model/" + modelName + "/version", {
-    retry: 0,
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + token.value,
-    },
-    onRequestError() {
-      requestErrorAlert();
-    },
-    onResponse({ response }) {
-      if (response._data) {
-        selectedModel.value = modelName;
-        versionOptions.value = [];
-        response._data.forEach((version: string) => {
-          versionOptions.value.push({
-            value: version,
-            text: version,
-          });
-        });
-      }
-    },
-    onResponseError() {
-      responseErrorAlert();
-    },
-  });
-
-  versionOptions.value.sort(function (
-    a: { value: string; text: string },
-    b: { value: string; text: string },
-  ) {
-    if (a.value < b.value) {
-      return -1;
-    } else if (a.value > b.value) {
-      return 1;
-    } else {
-      return 0;
+  try {
+    console.log("Selected model: ", selectedModel.value);
+    if (!initialPageLoad) {
+      selectedVersion.value = "";
     }
-  });
+    if (modelName === "") {
+      versionOptions.value = [];
+      clearArtifacts();
+      return;
+    }
+
+    await $fetch(config.public.apiPath + "/model/" + modelName + "/version", {
+      retry: 0,
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token.value,
+      },
+      onRequestError() {
+        requestErrorAlert();
+      },
+      onResponse({ response }) {
+        if (response._data) {
+          selectedModel.value = modelName;
+          versionOptions.value = [];
+          response._data.forEach((version: string) => {
+            versionOptions.value.push({
+              value: version,
+              text: version,
+            });
+          });
+        }
+      },
+      onResponseError() {
+        responseErrorAlert();
+      },
+    });
+
+    versionOptions.value.sort(function (
+      a: { value: string; text: string },
+      b: { value: string; text: string },
+    ) {
+      if (a.value < b.value) {
+        return -1;
+      } else if (a.value > b.value) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+  } catch (error) {
+    console.error("Error selecting model:", error);
+  }
 }
 
 // Update the selected version for the artifact store.
@@ -433,6 +505,8 @@ function populateArtifacts(model: string, version: string, artifactList: any) {
     // Negotiation card
     if (artifact.header.type === "negotiation_card") {
       if (isValidNegotiation(artifact)) {
+        console.log("Model: ", model);
+        console.log("Version: ", version);
         negotiationCards.value.push({
           id: artifact.header.identifier,
           timestamp: artifact.header.timestamp,
@@ -499,6 +573,13 @@ function clearArtifacts() {
   validatedSpecs.value = [];
   values.value = [];
 }
+
+// When negotiationCards changes, print all values in negotiationCards
+watch(negotiationCards, (newCards) => {
+  for (const card of newCards) {
+    console.log("Negotiation card: ", card);
+  }
+}, { deep: true });
 </script>
 
 <style>

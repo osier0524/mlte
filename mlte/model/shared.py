@@ -234,8 +234,12 @@ class DataDescriptor(BaseModel):
 class QASDescriptor(BaseModel):
     """Describes the system-level requirements for the model component. Represents a Quality Attribute Scenario."""
 
+    id: Optional[str] = None
+
     quality: Optional[str] = None
     """System property that is being evaluated."""
+
+    category: Optional[str] = None
 
     stimulus: Optional[str] = None
     """The condition that triggers this scenario."""
@@ -251,3 +255,5 @@ class QASDescriptor(BaseModel):
 
     measure: Optional[str] = None
     """Used to determine if the goals of the responses of the scenario have been achieved."""
+
+    content: Optional[str] = None
