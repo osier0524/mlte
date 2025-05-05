@@ -1,90 +1,460 @@
 <template>
   <div>
     <br />
-    <p>Training latency is the time it takes to train a machine learning model on a dataset. For a flower classification model on a handheld device, low training latency is crucial for quickly updating the model with new data, ensuring it remains accurate and effective without causing extended delays in development or updates.</p>
-    <br />
-    <h2><b> </b></h2>
+    <!-- API call -->
+    <div class="chatgptcall">
+      <p>
+        Also known as learning time, refers to the time taken for a model to process training data.
+        <span class="AIgeneratedtext">{{ response }} </span>
+      </p>
+    </div>
 
-    <label><b>Deployment Infrastructure</b></label>
-    <USelect
-      placeholder="Select an option..."
-      :options="['Cloud', 'On-premise', 'Edge']"
-      icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="infrastructureDetails"
-    >
-      <template v-slot:info-icon>
-        <i-heroicons-information-circle-20-solid />
-        <p>Info Tip: This field represents the environment where the model will be deployed. Choose the most suitable option based on your project's requirements.</p>
-      </template>
-    </USelect>
-    <br />
+    <!-- <p> <b>What does that mean for your project?</b></p> -->
+     <br/>
+    <p><b>Background Questions </b></p>
+    <br/>
+<div>  
+  <!-- 1  Option -->
+  <label><b>Select the retraining method you will use for your model</b></label>
+<!-- 
+  <div class="info-container">
+    <span class="info-icon">i</span>
+    <div class="tooltip">API call for project-specific definition</div>
+  </div> -->
 
-    <label><b>Frequency of retraining </b></label>
-    <USelect
-      placeholder="Select an option..."
-      :options="['Never', 'To be defined']"
-      icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="strategies"
-    >
-      <template v-slot:info-icon>
-        <i-heroicons-information-circle-20-solid />
-        <p>Info Tip: Indicate how often the model will need to be retrained with new data to maintain its accuracy and relevance.</p>
-      </template>
-    </USelect>
-    <br />
+  <!-- USelect Component -->
+  <USelect
+    placeholder="Select an option..."
+    :options="retrainingmethodslist"
+    icon="i-heroicons-magnifying-glass-20-solid"
+    v-model="retrainingMethod"
+    @change="handleSelection"
+  />
 
-    <label><b> Are you considering energy usage and carbon footprint in your model?</b></label>
-    <USelect
-      placeholder="Select an option..."
-      :options="['Yes', 'No']"
-      icon="i-heroicons-magnifying-glass-20-solid"
-      v-model="strategies"
-    >
-      <template v-slot:info-icon>
-        <i-heroicons-information-circle-20-solid />
-        <p>Info Tip: Consider the environmental impact of your model's training and deployment processes, especially in terms of energy consumption and carbon emissions.</p>
-      </template>
-    </USelect>
-    <br />
-
-    <label><b> Trade-offs to Consider:</b></label>
-    <ul>
-      <li><b> - Model Accuracy vs. Training Speed:</b></li>
-      <li><b> - Feature Engineering vs. Training Speed</b> </li>
-    </ul>
-
-    <br />
+  <!-- Conditionally show input field for 'Other' -->
+  
+  <div v-if="showOtherInput">
+    <label for="otherInput"><b>*Specify Training Location</b> </label>
+    <UInput v-model="OtherRetrainingOption" placeholder="Specify your training option" style="width: 300px;" />
   </div>
+
+  <br/>
+
+  <label><b> Source of the data for retraining </b></label>
+    <!-- <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div> -->
+    <UInput v-model="DataSource" />
+    <br/>
+
+  <div>
+    <!-- Deployment Infrastructure -->
+    <label><b> Frequency of Retraining </b></label>
+    <!-- <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">API call for project-specific definition</div>
+    </div> -->
+
+    <USelect
+      placeholder="Select an option..."
+      :options="secondoptions"
+      icon="i-heroicons-magnifying-glass-20-solid"
+      v-model="frequencyRetrain"
+      @change="handleSelectionDeployment"
+     
+    />
+
+    <!-- Conditionally show input field for Other -->
+    <div v-if="showOtherInputDeployment">
+      <label for="otherInput"><b>*Specify Other Training Method</b></label>
+      <UInput v-model="OtherDeploymentOption" placeholder="Specify your deployment infrastructure" style="width: 300px;" />
+    </div>
+    <br/>
+  </div>
+  
+ 
+
+  <p><b>Requirement</b></p>
+    <br/>
+
+
+    <!-- -->
+
+    <label><b>Expected Retraining Latency</b></label>
+
+    <!-- <div class="info-container">
+      <span class="info-icon">i</span>
+      <div class="tooltip">{{ExpectedLatencyResponse}}</div>
+    </div> -->
+
+    <div style="display: flex; align-items: center;"> 
+    <UInput 
+    v-model="ExpectedLatency" 
+    style="width: 50px;" 
+     />
+     <p style="margin-left:8px; margin-bottom:0;">
+
+    <USelect
+          placeholder="unit"
+          variant="outline"
+          :options="['secs', 'mins', 'hours']"
+           v-model="unit_averagelatency"
+      />
+      </p>
+     </div>
+    <br />
+
+      <!-- Dynamic Sentence -->
+      <p class="input-group" style="padding-top: 10px; padding-bottom: 10px">
+  <b>Scenario for Training Latency:</b> The model's retraining latency is expected to be [{{ ExpectedLatency }}] {{unit_averagelatency}} using [{{ retrainingMethod }}]. The source of the retraining data is from [{{ DataSource }}].
+</p>
+<br/>
+<UButton color="yellow" :ui="{ rounded: 'rounded-full' }" @click="checkMetrics" :style="{color: 'black'}" ><b>Do these metrics make sense?</b></UButton>
+
+<br/>
+<br/>
+
+<!-- Display the 2nd call -->
+
+<p v-if="secondResponse && secondResponse.length > 0">
+    <span class="AIgeneratedtext">
+        <ul>
+            <li v-for="(bullet, index) in secondResponse" :key="index" class="spaced-bullet">{{ bullet }}</li>
+        </ul>
+    </span>
+</p>
+
+
+<br/>
+</div>
+</div>
+
+
+<!-- SAVE BUTTON --> 
+<div style="display: flex; align-items: center;">
+    <UButton color="yellow" :disabled="!isFormComplete" @click="saveForm" :style="{color: 'black', width: '80px', justifyContent: 'center', alignItems: 'center'}">
+        <b>Save</b>
+    </UButton>
+    <p v-if="saveStatusMessage" style="color: gray; margin-left: 10px; font-size: 14px;">
+        {{ saveStatusMessage }}
+    </p>
+</div>
+
+<br/>
+
+<span class="AIgeneratedtext" id="cautiontext"> Highlighted text was generated by AI. Verify information as ChatGPT can make mistakes </span>
+
+
+<p> </p>
+
 </template>
 
 <script lang="ts">
-import { ref } from 'vue';
+import type { _textColor } from '#tailwind-config/theme';
+import { ref, onMounted, computed } from 'vue';
+import { openai } from '~/composables/openai';
 
-// data from the negotiation card 
 export default {
+  data() {
+    return {
+      selectedOption: '',
+      otherOptionValue: '',
+      showOtherOption: false,
+      OtherDeploymentOption: '',
+      frequencyRetrain: '', 
+      retrainingMethod: '', 
+      otherInputValue: '', 
+      showOtherInput: false, 
+      showOtherInputDeployment: false,
+      secondoptions: [
+        'Real-time (as new data arrives)', 
+        'Trigger-based',
+        'Daily', 
+        'Weekly', 
+        'Monthly',
+        'TBD', 
+        'Other'
+      ],
+
+      retrainingmethodslist: [
+        'Incremental learning',
+        'Batch learning',
+        'TBD',
+        'Other',
+        ],
+  
+    };
+  },
+
+  // METHODS 
+  methods: {
+    toggleOtherOption() {
+      this.showOtherOption = this.selectedOption === 'other';
+    },
+    handleSelection() {
+      // Show the input field if "Other" is selected
+      this.showOtherInput = this.retrainingMethod
+ === 'Other';
+    },
+
+    handleSelectionDeployment(){
+      this.showOtherInputDeployment = this.frequencyRetrain === 'Other';
+    }
+
+  },
+
+  // COMPONENT METADATA
   name: 'InferenceLatencyForm',
   props: {
     MLTask: {
-      type: String,
       required: true,
     },
     usageContext: {
-      type: String,
       required: true,
     },
   },
-  setup() {
-    // reactive vars
-    const deploymentInfrastructure = ref<string | null>(null);
-    const infrastructureDetails = ref<string | null>(null);
+
+  // SETUP 
+  setup(props) {
+    const response = ref('');
+    const secondResponse = ref('');
+    const retrainingMethod = ref<string | null>(null);
+    const ExpectedLatencyResponse = ref<string | null>(null);
+    const DataSource = ref<string | null>(null);
+    const unit_averagelatency = ref<string | null>(null);
+    const OtherRetrainingOption = ref<string | null>(null);
+    const frequencyRetrain = ref<string | null>(null);
+    const ExpectedLatency = ref<string | null>(null);
+    const PercentageLatency = ref<string | null>(null);
+    const latencySeconds = ref<string | null>(null);
+
+    // New state for save status
+    const saveStatusMessage = ref('');
+
+    // Computed property to check if the form is complete
+    const isFormComplete = computed(() => {
+        return (
+            retrainingMethod
+      .value &&
+            frequencyRetrain.value &&
+            ExpectedLatency.value &&
+            PercentageLatency.value &&
+            latencySeconds.value
+        );
+    });
+
+    const saveForm = () => {
+        // Here you can save the data. This is a simple example.
+        const formData = {
+            retrainingMethod
+      : retrainingMethod
+      .value,
+            frequencyRetrain: frequencyRetrain.value,
+            ExpectedLatency: ExpectedLatency.value,
+            PercentageLatency: PercentageLatency.value,
+            latencySeconds: latencySeconds.value,
+        };
+       localStorage.setItem('formData', JSON.stringify(formData));
+      
+        console.log("Saving form data:", formData);
+        
+        saveStatusMessage.value = "Form saved successfully";
+
+
+    };
+
+    const firstWordOfDeploymentInfrastructure = computed(() => {
+      if (retrainingMethod.value) {
+        return retrainingMethod.value.split(' ')[0]; 
+      }
+      return '';
+    });
+
+    const firstWordOffrequencyRetrain = computed(() => {
+      if (frequencyRetrain.value) {
+        return frequencyRetrain.value.split(' ')[0]; 
+      }
+      return '';
+    });
+
+    // OPEN AI API INTEGRATION
+
+    // Consequence call 
+    const chat_role = 'You are a specialized data scientist with knowledge in both software engineering and data science. Offer thoughful criticism.';
+
+    const getChatResponse = async () => {
+      const { chat } = openai();
+      try {
+        const messages = [
+          {
+            role: 'system',
+            content: chat_role,
+          },
+          {
+            role: 'user',
+            content: `Write one sentence to explain the potential consequences of not considering training latency in the context of ${props.MLTask} and ${props.usageContext}. Use language that data scientists would understand.
+            Provide a realistic consequences and focus on retraining latency.`,
+          },
+        ];
+
+        const chatResponse = await chat(messages, 'gpt-3.5-turbo');
+        const splitResponse = chatResponse.split('\n\n');
+        response.value = splitResponse[0];
+      } catch (error) {
+        console.error('Error fetching chat response:', error);
+      }
+    };
+
+
+    // Evaluation button 
+    const checkMetrics = async () => {
+    const { chat } = openai();
+    try {
+        const messages = [
+            {
+                role: 'system',
+                content: chat_role,
+            },
+            {
+                role: 'user',
+                content: `Please review the following latency metrics for ${props.MLTask}:
+              
+                - Expected Latency: ${ExpectedLatency.value} ${unit_averagelatency.value}
+                - The retraining method that will be used for retraing is ${retrainingMethod.value}
+                - The data that will be used for retraining is ${DataSource.value}
+                - The retraining frequency is ${frequencyRetrain.value}
+                
+                Does this metric seem reasonable for this project? Provide a brief response with targeted language for data scientists 
+
+
+                `
+    
+                ,
+            },
+        ];
+
+        const chatResponse = await chat(messages, 'gpt-3.5-turbo');
+        
+        // Clean the chat response and extract the bullet points
+        secondResponse.value = formatSecondResponse(chatResponse);
+    } catch (error) {
+        console.error('Error fetching metrics response:', error);
+    }
+};
+
+function formatSecondResponse(text) {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    
+    const bullets = lines.slice(0, 3).map(line => line.trim());
+    
+    return bullets;
+}
+
+
+    // HOOK
+    onMounted(() => {
+      getChatResponse(); // initial call 
+        const storedData = localStorage.getItem('formData');
+        if (storedData) {
+        const formData = JSON.parse(storedData);
+        retrainingMethod
+  .value = formData.retrainingMethod
+  ;
+        frequencyRetrain.value = formData.frequencyRetrain;
+        ExpectedLatency.value = formData.ExpectedLatency;
+        PercentageLatency.value = formData.PercentageLatency;
+        latencySeconds.value = formData.latencySeconds;
+    }
+    });
 
     return {
-      deploymentInfrastructure,
-      infrastructureDetails,
+      response,
+      secondResponse,
+      retrainingMethod,
+      unit_averagelatency,
+      DataSource,
+      ExpectedLatencyResponse,
+      OtherRetrainingOption,
+      frequencyRetrain,
+      ExpectedLatency,
+      PercentageLatency,
+      latencySeconds,
+      firstWordOfDeploymentInfrastructure, 
+      firstWordOffrequencyRetrain,
+      checkMetrics,
+      //splitByDash,
+      saveStatusMessage,   
+      isFormComplete,      
+      saveForm,  
     };
   },
 };
 </script>
 
+
 <style scoped>
+.AIgeneratedtext{
+  background-color: #efe8c7;
+}
+
+.info-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-color: black;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  font-weight: bold;
+  font-family: Arial, cursive;
+  font-size: 10px;
+  cursor: pointer;
+  margin-left: 5px;
+  position: relative;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  background-color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 200px;
+  top: 25px; 
+  left: 0;
+  z-index: 10;
+}
+
+.info-container:hover .tooltip {
+  display: block;
+}
+
+.info-container {
+  position: relative;
+  display: inline-block;
+}
+
+#cautiontext{
+  font-size: 12px;
+  font-style: italic;
+  text-align: center;
+}
+.spaced-bullet {
+  margin-bottom: 10px; 
+}
+.highlighted-bullet {
+  background-color: #f0f8ff; 
+  padding: 10px;           
+  border-radius: 5px;        
+  margin-bottom: 10px;      
+  font-weight: bold;       
+  color: #333;             
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
+}
 </style>
