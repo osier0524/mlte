@@ -269,8 +269,6 @@
 
 <script setup lang="ts">
 import axios from 'axios';
-import { version } from 'os';
-import type internal from 'stream';
 
 const config = useRuntimeConfig();
 const token = useCookie("token");
