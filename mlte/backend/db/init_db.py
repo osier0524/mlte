@@ -32,14 +32,21 @@ def init_db():
     )
     db.add(artifact)
 
+    artifact2 = Artifact(
+        name="sign detection", 
+        project_description="This project aims to develop a machine learning model for detecting and recognizing road signs in real-time for autonomous vehicles. The model will identify various road signs—such as speed limits, stop signs, and yield signs—under different environmental conditions.",
+    )
+    db.add(artifact2)
+
     db.commit()
     db.refresh(artifact)
+    db.refresh(artifact2)
 
     requirements = [
-        Requirement(artifact_id=artifact.artifact_id, content="The model should accurately classify iris flowers with at least 95% accuracy."),
-        Requirement(artifact_id=artifact.artifact_id, content="The model should run on low-power devices with less than 1GB of RAM."),
-        Requirement(artifact_id=artifact.artifact_id, content="The model should provide confidence scores for each classification."),
-        Requirement(artifact_id=artifact.artifact_id, content="The model should be robust to variations in lighting and background."),
+        Requirement(artifact_id=artifact.artifact_id, card_index=0, content="The model should accurately classify iris flowers with at least 95% accuracy."),
+        Requirement(artifact_id=artifact.artifact_id, card_index=1, content="The model should run on low-power devices with less than 1GB of RAM."),
+        Requirement(artifact_id=artifact.artifact_id, card_index=2, content="The model should provide confidence scores for each classification."),
+        Requirement(artifact_id=artifact.artifact_id, card_index=3, content="The model should be robust to variations in lighting and background."),
     ]
 
     for req in requirements:

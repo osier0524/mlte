@@ -13,16 +13,19 @@ class RequirementService:
     def __init__(self, db: Session):
         self.db = db
         
-    def create_requirement(self, artifact_id: int, content: str) -> req_dto.RequirementCreateResponse:
-        req = Requirement(artifact_id=artifact_id, content=content)
+    def create_requirement(self, artifact_id: int, card_index: int, content: str) -> req_dto.RequirementCreateResponse:
+        req = Requirement(artifact_id=artifact_id, card_index=card_index, content=content)
         self.db.add(req)
         self.db.commit()
         self.db.refresh(req)
         response = req_dto.RequirementCreateResponse(requirement_id=req.requirement_id)
         return response
 
-    def update_requirement(self, requirement_id: int, content: str) -> req_dto.RequirementCreateResponse:
-        req = self.db.query(Requirement).filter_by(requirement_id=requirement_id).first()
+    def update_requirement(self, artifact_id: int, card_index: int, content: str) -> req_dto.RequirementCreateResponse:
+        req = self.db.query(Requirement).filter_by(
+            artifact_id=artifact_id,
+            card_index=card_index
+        ).first()
         if not req:
             raise ValueError("Requirement not found")
         
@@ -34,10 +37,12 @@ class RequirementService:
 
     def add_categories_to_requirement(
         self,
-        requirement_id: int,
+        artifact_id: int,
+        card_index: int,
         category_names: list[str]
     ):
         # delete old links
+        requirement_id = self._get_requirement_id(artifact_id, card_index)
         self.db.query(RequirementCategory).filter_by(
             requirement_id=requirement_id
         ).delete()
@@ -170,7 +175,7 @@ class RequirementService:
         try:
             requirement = (
                 self.db.query(Requirement)
-                .filter(Requirement.artifact_id == artifact_id, Requirement.requirement_id == requirement_id)
+                .filter(Requirement.requirement_id == requirement_id)
                 .options(
                     joinedload(Requirement.categories).joinedload(RequirementCategory.category),
                     joinedload(Requirement.feedbacks)
@@ -280,3 +285,13 @@ class RequirementService:
         version = hashlib.md5(combined_timestamps.encode()).hexdigest()
 
         return version
+    
+    def _get_requirement_id(self, artifact_id: int, card_index: int) -> int:
+        requirement = self.db.query(Requirement).filter_by(
+            artifact_id=artifact_id,
+            card_index=card_index
+        ).first()
+        if not requirement:
+            return None
+        
+        return requirement.requirement_id

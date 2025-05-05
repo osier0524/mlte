@@ -4,6 +4,7 @@ from mlte.backend.dto.critique import FeedbackResponse
 
 class RequirementBase(BaseModel):
     artifact_id: int
+    card_index: int
     content: str
 
 class RequirementCreate(RequirementBase):
@@ -13,7 +14,8 @@ class RequirementCreateResponse(BaseModel):
     requirement_id: int
 
 class RequirementCategoryAssign(BaseModel):
-    requirement_id: int
+    artifact_id: int
+    card_index: int
     category_names: List[str]
 
 class CategoryResponse(BaseModel):

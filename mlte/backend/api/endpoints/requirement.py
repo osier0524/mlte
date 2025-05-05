@@ -27,7 +27,7 @@ def get_requirement(requirement_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=RequirementCreateResponse)
 def create_requirement(req: RequirementCreate, db: Session = Depends(get_db)):
     service = RequirementService(db)
-    return service.create_requirement(req.artifact_id, req.content)
+    return service.create_requirement(req.artifact_id, req.card_index, req.content)
 
 # update a requirement
 @router.post("/{requirement_id}", response_model=RequirementCreateResponse)
@@ -37,7 +37,7 @@ def update_requirement(
     db: Session = Depends(get_db)
 ):
     service = RequirementService(db)
-    return service.update_requirement(requirement_id, req.content)
+    return service.update_requirement(req.artifact_id, req.card_index, req.content)
 
 # add requirement category
 @router.post("/{requirement_id}/assign-categories")
@@ -49,7 +49,8 @@ def assign_categories(
     service = RequirementService(db)
     try:
         service.add_categories_to_requirement(
-            payload.requirement_id, 
+            payload.artifact_id,
+            payload.card_index,
             payload.category_names
         )
     except Exception as e:

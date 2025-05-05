@@ -383,6 +383,7 @@ if (modelOptions.value !== null && modelOptions.value.length > 0) {
     selectedVersion.value = "";
   }
   if (selectedModel.value !== "") {
+    console.log("Selected model: ", selectedModel.value);
     await selectModel(selectedModel.value, true);
     const versionList = versionOptions.value.map((version) => {
       return version.value;
@@ -398,54 +399,59 @@ if (modelOptions.value !== null && modelOptions.value.length > 0) {
 
 // Update the selected model for the artifact store.
 async function selectModel(modelName: string, initialPageLoad: boolean) {
-  selectedModel.value = modelName;
-  if (!initialPageLoad) {
-    selectedVersion.value = "";
-  }
-  if (modelName === "") {
-    versionOptions.value = [];
-    clearArtifacts();
-    return;
-  }
-
-  await $fetch(config.public.apiPath + "/model/" + modelName + "/version", {
-    retry: 0,
-    method: "GET",
-    headers: {
-      Authorization: "Bearer " + token.value,
-    },
-    onRequestError() {
-      requestErrorAlert();
-    },
-    onResponse({ response }) {
-      if (response._data) {
-        selectedModel.value = modelName;
-        versionOptions.value = [];
-        response._data.forEach((version: string) => {
-          versionOptions.value.push({
-            value: version,
-            text: version,
-          });
-        });
-      }
-    },
-    onResponseError() {
-      responseErrorAlert();
-    },
-  });
-
-  versionOptions.value.sort(function (
-    a: { value: string; text: string },
-    b: { value: string; text: string },
-  ) {
-    if (a.value < b.value) {
-      return -1;
-    } else if (a.value > b.value) {
-      return 1;
-    } else {
-      return 0;
+  try {
+    console.log("Selected model: ", selectedModel.value);
+    if (!initialPageLoad) {
+      selectedVersion.value = "";
     }
-  });
+    if (modelName === "") {
+      versionOptions.value = [];
+      clearArtifacts();
+      return;
+    }
+
+    await $fetch(config.public.apiPath + "/model/" + modelName + "/version", {
+      retry: 0,
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token.value,
+      },
+      onRequestError() {
+        requestErrorAlert();
+      },
+      onResponse({ response }) {
+        if (response._data) {
+          selectedModel.value = modelName;
+          versionOptions.value = [];
+          response._data.forEach((version: string) => {
+            versionOptions.value.push({
+              value: version,
+              text: version,
+            });
+          });
+        }
+      },
+      onResponseError() {
+        responseErrorAlert();
+      },
+    });
+
+    versionOptions.value.sort(function (
+      a: { value: string; text: string },
+      b: { value: string; text: string },
+    ) {
+      if (a.value < b.value) {
+        return -1;
+      } else if (a.value > b.value) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+  } catch (error) {
+    console.error("Error selecting model:", error);
+  }
 }
 
 // Update the selected version for the artifact store.
@@ -499,6 +505,8 @@ function populateArtifacts(model: string, version: string, artifactList: any) {
     // Negotiation card
     if (artifact.header.type === "negotiation_card") {
       if (isValidNegotiation(artifact)) {
+        console.log("Model: ", model);
+        console.log("Version: ", version);
         negotiationCards.value.push({
           id: artifact.header.identifier,
           timestamp: artifact.header.timestamp,
@@ -565,6 +573,13 @@ function clearArtifacts() {
   validatedSpecs.value = [];
   values.value = [];
 }
+
+// When negotiationCards changes, print all values in negotiationCards
+watch(negotiationCards, (newCards) => {
+  for (const card of newCards) {
+    console.log("Negotiation card: ", card);
+  }
+}, { deep: true });
 </script>
 
 <style>

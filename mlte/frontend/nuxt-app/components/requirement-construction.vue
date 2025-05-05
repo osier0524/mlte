@@ -166,6 +166,7 @@ const isLoading = ref(false)
 async function saveRequirement() {
     const requestBody = {
         artifact_id: props.artifactId,
+        card_index: props.requirementIndex,
         content: props.requirement.content,
     }
     if (props.artifactId === null) {
@@ -182,15 +183,21 @@ async function saveRequirement() {
       let response = null
       let requirementChanged = false
 
-      if (stored) {
+      if (stored && stored !== 'undefined') {
         // Update existing requirement
         requirementId.value = Number(stored)
         // Compare with the existing requirement
-        const existingRequirement = await axios.get(
-          config.public.apiPath + '/requirements/' + requirementId.value
-        )
-        if (existingRequirement.data.content !== requestBody.content) {
-          console.log('Requirement content changed')
+        // if exists requirement
+        if (requirementId.value) {
+          const existingRequirement = await axios.get(
+            config.public.apiPath + '/requirements/' + requirementId.value
+          )
+          if (existingRequirement.data.content !== requestBody.content) {
+            console.log('Requirement content changed')
+            requirementChanged = true
+          }
+        } else {
+          console.log('No existing requirement found')
           requirementChanged = true
         }
 
@@ -201,10 +208,12 @@ async function saveRequirement() {
       }
       else {
         // Create new requirement
+        console.log('Creating new requirement')
         response = await axios.post(
           config.public.apiPath + '/requirements',
           requestBody
         )
+        requirementChanged = true
       }
       
       const returnedId = response.data.requirement_id
@@ -214,7 +223,8 @@ async function saveRequirement() {
       localStorage.setItem(storageKey, returnedId.toString())
 
       const category_body = {
-        requirement_id: requirementId.value,
+        artifact_id: props.artifactId,
+        card_index: props.requirementIndex,
         category_names: category_name,
       }
       console.log('Saving requirement categories:', category_body)

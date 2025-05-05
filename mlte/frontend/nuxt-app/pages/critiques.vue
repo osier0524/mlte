@@ -152,7 +152,9 @@ watchEffect(() => {
 
 onMounted(() => {
   console.log('Artifact ID:', artifactId);
-  checkAndMaybeCritique();
+  setTimeout(() => {
+    checkAndMaybeCritique();
+  }, 100)
   fetchQualities();
 });
 
@@ -264,7 +266,9 @@ const fetchQualities = async () => {
 // Fetch critiques when selected filters change
 watch(selectedRightFilters, (newFilters) => {
   console.log('Selected Right Filters changed:', newFilters);
-  checkAndMaybeCritique();
+  setTimeout(() => {
+    checkAndMaybeCritique();
+  }, 100);
   fetchQualities();
 }, { deep: true });
 

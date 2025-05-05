@@ -25,6 +25,7 @@ class Requirement(Base):
 
     requirement_id = Column(Integer, primary_key=True, autoincrement=True)
     artifact_id = Column(Integer, ForeignKey("artifacts.artifact_id", ondelete="CASCADE"), nullable=False)
+    card_index = Column(Integer, nullable=False)
     content = Column(Text, nullable=False)
     content_updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
