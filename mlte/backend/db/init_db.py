@@ -32,15 +32,15 @@ def init_db():
     )
     db.add(artifact)
 
-    artifact2 = Artifact(
-        name="sign detection", 
-        project_description="This project aims to develop a machine learning model for detecting and recognizing road signs in real-time for autonomous vehicles. The model will identify various road signs—such as speed limits, stop signs, and yield signs—under different environmental conditions.",
-    )
-    db.add(artifact2)
+    # artifact2 = Artifact(
+    #     name="sign detection", 
+    #     project_description="This project aims to develop a machine learning model for detecting and recognizing road signs in real-time for autonomous vehicles. The model will identify various road signs—such as speed limits, stop signs, and yield signs—under different environmental conditions.",
+    # )
+    # db.add(artifact2)
 
     db.commit()
     db.refresh(artifact)
-    db.refresh(artifact2)
+    # db.refresh(artifact2)
 
     requirements = [
         Requirement(artifact_id=artifact.artifact_id, card_index=0, content="The model should accurately classify iris flowers with at least 95% accuracy."),
@@ -73,62 +73,6 @@ def init_db():
 
     for link in category_links:
         db.add(link)
-    
-    db.commit()
-    
-    # Feedback 1: Ambiguous accuracy requirement
-    feedback1 = Feedback(requirement_id=requirements[0].requirement_id, level="warning")
-    db.add(feedback1)
-    db.commit()
-    db.refresh(feedback1)
-    
-    # Connect feedback to unambiguous quality
-    fq1 = FeedbackQuality(feedback_id=feedback1.feedback_id, quality_id=quality_objs[0].quality_id)
-    db.add(fq1)
-    db.commit()
-    db.refresh(fq1)
-
-    # Add critiques to this feedback-quality combination
-    critiques1 = [
-        Critique(
-            feedback_quality_id=fq1.feedback_quality_id, 
-            content="The requirement does not specify which dataset the 95% accuracy should be measured on."
-        ),
-        Critique(
-            feedback_quality_id=fq1.feedback_quality_id, 
-            content="The requirement does not specify which metric (precision, recall, F1) to use for measuring accuracy."
-        )
-    ]
-    
-    for critique in critiques1:
-        db.add(critique)
-
-    # Feedback 2: Incomplete efficiency requirement
-    feedback2 = Feedback(requirement_id=requirements[1].requirement_id, level="error")
-    db.add(feedback2)
-    db.commit()
-    db.refresh(feedback2)
-    
-    # Connect feedback to complete quality
-    fq2 = FeedbackQuality(feedback_id=feedback2.feedback_id, quality_id=quality_objs[2].quality_id)
-    db.add(fq2)
-    db.commit()
-    db.refresh(fq2)
-    
-    # Add critiques to this feedback-quality combination
-    critiques2 = [
-        Critique(
-            feedback_quality_id=fq2.feedback_quality_id, 
-            content="The requirement does not specify a maximum inference time."
-        ),
-        Critique(
-            feedback_quality_id=fq2.feedback_quality_id, 
-            content="The requirement does not specify power consumption limits."
-        )
-    ]
-    
-    for critique in critiques2:
-        db.add(critique)
 
     db.commit()
     db.close()
