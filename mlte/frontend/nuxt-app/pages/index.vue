@@ -241,28 +241,34 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(artifact, i) in artifactsInDatabase" :key="artifact.artifact_id">
-                  <th scope="row">{{ artifact.name }}</th>
-                  <td style="text-align: right; padding-right: 0.5rem;">
-                    <NuxtLink
-                      :to="{
-                        path: 'critiques',
-                        query: {
-                          model: negotiationCards[i].model,
-                          version: negotiationCards[i].version,
-                          artifactId: negotiationCards[i].id,
-                          intId: artifact.artifact_id,
-                        },
-                      }"
-                    >
-                      <UsaButton class="primary-button"> Critiques </UsaButton>
-                    </NuxtLink>
-                  </td>
-                </tr>
+                <template
+                  v-for="(artifact, i) in artifactsInDatabase" :key="artifact.artifact_id"
+                >
+                  <tr v-if="findMatchingCard(artifact.name)" >
+                    <th scope="row">{{ artifact.name }}</th>
+                    <td style="text-align: right; padding-right: 0.5rem;">
+                      <NuxtLink
+                        
+                        :to="{
+                          path: 'critiques',
+                          query: {
+                            model: negotiationCards[i].model,
+                            version: negotiationCards[i].version,
+                            artifactId: negotiationCards[i].id,
+                            intId: artifact.artifact_id,
+                          },
+                        }"
+                      >
+                        <UsaButton class="primary-button"> Critiques </UsaButton>
+                      </NuxtLink>
+                    </td>
+                  </tr>
+                </template>
               </tbody>
           </table>
         </div>
       </UsaAccordionItem>
+
     </UsaAccordion>
   </NuxtLayout>
 </template>
@@ -291,6 +297,10 @@ interface Artifact {
 }
 
 const artifactsInDatabase = ref<Artifact[]>([])
+
+function findMatchingCard(artifactName: String) {
+  return negotiationCards.value.find(card => card.id === artifactName);
+}
 
 onMounted(async() => {
   try {
@@ -496,71 +506,84 @@ async function selectVersion(versionName: string) {
 // Populate artifacts for a given model and version.
 // TODO : Do better typing on the artifactList and artifact
 function populateArtifacts(model: string, version: string, artifactList: any) {
-  artifactList.forEach((artifact: any) => {
-    artifact.header.timestamp = new Date(
-      artifact.header.timestamp * 1000,
-    ).toLocaleString("en-US");
-    // Negotiation card
-    if (artifact.header.type === "negotiation_card") {
-      if (isValidNegotiation(artifact)) {
-        console.log("Model: ", model);
-        console.log("Version: ", version);
-        negotiationCards.value.push({
-          id: artifact.header.identifier,
-          timestamp: artifact.header.timestamp,
-          model,
-          version,
-        });
+  try {
+    console.log("Processing artifacts:", model, version);
+    console.log("Artifact list sample:", artifactList[0]);
+
+    artifactList.forEach((artifact: any) => {
+      try {
+
+        artifact.header.timestamp = new Date(
+          artifact.header.timestamp * 1000,
+        ).toLocaleString("en-US");
+        // Negotiation card
+        if (artifact.header.type === "negotiation_card") {
+          if (isValidNegotiation(artifact)) {
+            console.log("Model: ", model);
+            console.log("Version: ", version);
+            negotiationCards.value.push({
+              id: artifact.header.identifier,
+              timestamp: artifact.header.timestamp,
+              model,
+              version,
+            });
+            console.log("negotiationCards: ", negotiationCards.value);
+          }
+        }
+        // Report
+        else if (artifact.header.type === "report") {
+          if (isValidReport(artifact)) {
+            reports.value.push({
+              id: artifact.header.identifier,
+              timestamp: artifact.header.timestamp,
+              model,
+              version,
+            });
+          }
+        }
+        // Spec
+        else if (artifact.header.type === "spec") {
+          if (isValidSpec(artifact)) {
+            specifications.value.push({
+              id: artifact.header.identifier,
+              timestamp: artifact.header.timestamp,
+              model,
+              version,
+            });
+          }
+        }
+        // Validated spec
+        else if (artifact.header.type === "validated_spec") {
+          if (isValidValidatedSpec(artifact)) {
+            validatedSpecs.value.push({
+              id: artifact.header.identifier,
+              specid: artifact.body.spec_identifier,
+              timestamp: artifact.header.timestamp,
+              model,
+              version,
+            });
+          }
+        }
+        // Value
+        if (artifact.header.type === "value") {
+          if (isValidValue(artifact)) {
+            values.value.push({
+              id: artifact.header.identifier.slice(0, -6),
+              measurement: artifact.body.metadata.measurement_type,
+              type: artifact.body.value.value_type,
+              timestamp: artifact.header.timestamp,
+              model,
+              version,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error processing artifact:", artifact.header?.identifier, error);
       }
-    }
-    // Report
-    else if (artifact.header.type === "report") {
-      if (isValidReport(artifact)) {
-        reports.value.push({
-          id: artifact.header.identifier,
-          timestamp: artifact.header.timestamp,
-          model,
-          version,
-        });
-      }
-    }
-    // Spec
-    else if (artifact.header.type === "spec") {
-      if (isValidSpec(artifact)) {
-        specifications.value.push({
-          id: artifact.header.identifier,
-          timestamp: artifact.header.timestamp,
-          model,
-          version,
-        });
-      }
-    }
-    // Validated spec
-    else if (artifact.header.type === "validated_spec") {
-      if (isValidValidatedSpec(artifact)) {
-        validatedSpecs.value.push({
-          id: artifact.header.identifier,
-          specid: artifact.body.spec_identifier,
-          timestamp: artifact.header.timestamp,
-          model,
-          version,
-        });
-      }
-    }
-    // Value
-    if (artifact.header.type === "value") {
-      if (isValidValue(artifact)) {
-        values.value.push({
-          id: artifact.header.identifier.slice(0, -6),
-          measurement: artifact.body.metadata.measurement_type,
-          type: artifact.body.value.value_type,
-          timestamp: artifact.header.timestamp,
-          model,
-          version,
-        });
-      }
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Error populating artifacts:", error);
+  }
 }
 
 // Clear all artifacts from local state.
